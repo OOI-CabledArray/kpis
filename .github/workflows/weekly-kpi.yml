@@ -3,7 +3,8 @@ name: Weekly delivery KPI
 # Re-tabulates a rolling recent window every Monday (stateless -- so weeks heal
 # as late/backfilled data arrives) and commits the pivots + heatmaps under
 # reports/<date>/. Reads the tracked inputs instrument_status.csv, baseline_overrides.csv,
-# original_expected.csv.
+# original_expected.csv. C1/C3 only -- C2 (crawl_science) is too heavy for a hosted
+# runner (opens dozens of multi-GB zarr -> OOM), so it's run out-of-band; see README.
 
 on:
   schedule:
@@ -35,11 +36,12 @@ jobs:
           DATE=$(date -u +%F)
           echo "RUN_DATE=$DATE" >> "$GITHUB_ENV"
           crawl_archive --date "$DATE"          # C1/C3 delivered side (rolling ~3 months)
-          crawl_science --date "$DATE"          # C2 QARTOD pass-rate from zarr (slow)
-          compute_kpi --date "$DATE"            # all outputs land in reports/$DATE/
+          compute_kpi --date "$DATE"            # folds in C2 if weekly_science.csv was committed
           plot_kpi --metric technical --date "$DATE"
           plot_kpi --metric retention --date "$DATE"
-          plot_kpi --metric science --date "$DATE"
+          # NOTE: crawl_science (C2) is NOT run here -- it opens dozens of multi-GB zarr from S3
+          # and would OOM a 2-vCPU/7-GB hosted runner. Run it out-of-band (local / self-hosted)
+          # and commit reports/<date>/weekly_science.csv; compute_kpi picks it up. plot science there too.
 
       - name: Commit report
         run: |

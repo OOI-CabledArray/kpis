@@ -65,12 +65,14 @@ def load_overrides(path):
 
 
 def load_science(path):
-    """C2 QARTOD pass-rate {(refDes, week): pct_science} from crawl_science (optional)."""
+    """C2 from crawl_science (optional): {(refDes, week): (pct_science, pct_climatology)}."""
     if not os.path.exists(path):
         logger.warning(f"{path} missing -- run crawl_science for C2; pct_science will be blank")
         return {}
-    with open(path) as f:
-        return {(r["refDes"], r["week"]): float(r["pct_science"]) for r in csv.DictReader(f)}
+    with open(path) as f:  # pct_climatology only present with `crawl_science --decompose`
+        return {(r["refDes"], r["week"]):
+                (float(r["pct_science"]), float(r["pct_climatology"]) if r.get("pct_climatology") else None)
+                for r in csv.DictReader(f)}
 
 
 def week_start(week):  # week label is already the Monday date (YYYY-MM-DD)
@@ -128,12 +130,13 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
             state, eff, reduced = status[rd]
             if week_start(wk) >= eff:
                 c1 = 0 if state == "failed" else reduced
+        sci, clim = science.get((rd, wk), (None, None))  # C2: blank where no zarr (gray)
         records.append({
             "refDes": rd, "week": wk,
             "delivered_human": r["delivered_human"],
             "c1_expected_human": format_size(c1, binary=True), "pct_technical": pct(d, c1),
             "c3_expected_human": format_size(c3, binary=True), "pct_retention": pct(d, c3),
-            "pct_science": science.get((rd, wk)),  # C2: blank where no zarr (gray)
+            "pct_science": sci, "pct_climatology": clim,  # C2 (gross-range) + decomposition
         })
 
     records.sort(key=lambda r: (group_key(r["refDes"]), r["refDes"], r["week"]))
@@ -143,7 +146,7 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
     out = f"{rd_dir}/kpi.csv"
     cols = ["refDes", "week", "delivered_human",
             "c1_expected_human", "pct_technical", "c3_expected_human", "pct_retention",
-            "pct_science"]
+            "pct_science", "pct_climatology"]
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()

@@ -14,7 +14,9 @@ Three NSF metrics are produced side by side:
   capacity (never shrunk). "What did we lose overall?" Failed/down-sampled instruments read low.
 - **C2 Science** (`pct_science`) — % of **present zarr data without a QARTOD fail flag**
   (flag 4), averaged across parameters, per week. From the QC'd zarr datasets, not the raw
-  archive. Instruments with no zarr have no QARTOD and render gray.
+  archive. **Climatology is excluded** (it flags anomalous-but-valid events, not bad data),
+  so this is the gross-range pass rate; the climatology pass rate is reported alongside as
+  `pct_climatology`. Instruments with no zarr have no QARTOD and render gray.
 
 Healthy instruments get C1 == C3; they diverge only for failed/reduced ones. C2 is
 independent (a QC-quality measure of the data that did arrive).
@@ -99,11 +101,14 @@ crawl_archive --date 2026-06-25                     # override the output date t
 
 ### `crawl_science` — QARTOD pass-rate from zarr (C2)
 
-For each instrument with a `zarrFile`, opens its zarr from S3 (`ooi-data/`), reads the
-`*_qartod_results` variables, slices to the window, and per ISO week computes the **average
-across parameters of the fraction of points not flagged fail (4)**. Writes
-`reports/<date>/weekly_science.csv` (`refDes, week, pct_science`). Slow — it opens an S3
-zarr per instrument — so it's a distinct step; instruments without a zarr are omitted (gray).
+For each instrument with a `zarrFile`, opens its zarr from S3 (`ooi-data/`), parses the
+per-test results from `*_qartod_executed` (using each variable's `tests_executed` attr),
+slices to the window, and per ISO week computes the **average across parameters of the
+fraction of points not flagged fail (4)** — **excluding the climatology test**. Writes
+`reports/<date>/weekly_science.csv` (`refDes, week, pct_science, pct_climatology`), where
+`pct_science` is the gross-range (non-climatology) pass rate and `pct_climatology` is the
+separate climatology pass rate for diagnosis. Slow — it opens an S3 zarr per instrument — so
+it's a distinct step; instruments without a zarr are omitted (gray).
 
 ```bash
 crawl_science                                       # default: last 3 months
@@ -119,7 +124,7 @@ Joins `reports/<date>/weekly_delivery.csv` against the baseline (`original_expec
 
 - `kpi.csv` — one row per instrument-week: `delivered_human`, then C1
   (`c1_expected_human`, `pct_technical`), C3 (`c3_expected_human`, `pct_retention`), and
-  C2 (`pct_science`).
+  C2 (`pct_science`, plus the `pct_climatology` decomposition column).
 - `kpi_pivot_{technical,retention,science}.csv` — instruments × weeks grids of
   **whole-percent** values (capped at 100; over-delivery shown as `100+`), with a final
   `ALL_INSTRUMENTS_MEAN` row (the unweighted mean of per-instrument percentages, so large
@@ -192,8 +197,13 @@ CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files;
 ## Automation (GitHub Actions)
 
 - **`.github/workflows/weekly-kpi.yml`** — runs Mondays (and on demand). Re-tabulates
-  the rolling recent window from scratch (`crawl_archive` → `crawl_science` → `compute_kpi`
-  → `plot_kpi` ×3), then commits the whole `reports/<date>/` folder. Stateless re-tabulation is deliberate:
+  the rolling recent window from scratch (`crawl_archive` → `compute_kpi` → `plot_kpi` ×2,
+  C1/C3 only), then commits the whole `reports/<date>/` folder.
+  **C2 (`crawl_science`) is deliberately NOT in this job** — it opens dozens of multi-GB zarr
+  from S3 and would OOM a 2-vCPU/7-GB hosted runner. Run it **out-of-band** (locally or a
+  self-hosted/large runner), `plot_kpi --metric science`, and commit
+  `reports/<date>/weekly_science.csv` (+ the science heatmap); `compute_kpi` folds it in when
+  present. QARTOD configs change slowly, so C2 doesn't need a weekly refresh. Stateless re-tabulation is deliberate:
   recent weeks **heal as late/backfilled data arrives** (e.g. the hydrophone `addendum/`
   Navy data), which a crawl-once-append would miss. It reads the tracked
   `instrument_status.csv`, `baseline_overrides.csv`, and `original_expected.csv` from the checkout.

@@ -26,3 +26,13 @@ RS01SBPS-SF01A-4F-PCO2WA101,32.27 KiB,Sept 2025 avg weekly delivery (auto p95 in
 RS03AXPS-PC03A-4B-PHSENA302,182 KiB,Sept 2025 avg weekly delivery (auto p95 inflated by earlier anomaly/high period)
 RS03AXPS-SF03A-2D-PHSENA301,213.27 KiB,Sept 2025 avg weekly delivery (auto p95 inflated by earlier anomaly/high period)
 RS03AXPS-SF03A-4F-PCO2WA301,31.71 KiB,Sept 2025 avg weekly delivery (auto p95 inflated by earlier anomaly/high period)
+RS03CCAL-MJ03F-05-BOTPTA301,112 MiB,Sept 2025 benchmark (NANO sampling reduced 20->10->1 Hz in 2024; intentional, accepted)
+RS03INT2-MJ03D-06-BOTPTA303,112 MiB,Sept 2025 benchmark (NANO sampling reduced 20->10->1 Hz in 2024; intentional, accepted)
+RS03ASHS-MJ03B-09-BOTPTA304,112 MiB,Sept 2025 benchmark (NANO sampling reduced 20->10->1 Hz in 2024; intentional, accepted)
+RS03ECAL-MJ03E-06-BOTPTA302,714 MiB,Sept 2025 benchmark (still full-rate; sampling unchanged)
+CE02SHBP-LJ01D-11-HYDBBA106,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
+CE04OSBP-LJ01C-11-HYDBBA105,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
+RS01SBPS-PC01A-08-HYDBBA103,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
+RS01SLBS-LJ01A-09-HYDBBA102,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
+RS03AXBS-LJ03A-09-HYDBBA302,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
+RS03AXPS-PC03A-08-HYDBBA303,0 B,EXCLUDED -- Navy diversion makes the delivery score invalid
