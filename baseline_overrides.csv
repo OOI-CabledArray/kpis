@@ -7,3 +7,6 @@ RS01SBPS-PC01A-07-CAMDSC102,13.29 GiB,Sept 2025 avg weekly delivery (camera p95 
 RS01SUM2-MJ01B-05-CAMDSB103,13.9 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
 RS03AXPS-PC03A-07-CAMDSC302,14.79 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
 RS03INT1-MJ03C-05-CAMDSB303,5.85 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+CE04OSPS-SF01B-4A-NUTNRA102,80.01 MiB,Sept 2025 avg weekly delivery (post-deployment; auto p95 inflated by earlier high period)
+RS03AXPS-SF03A-4A-NUTNRA301,68.97 MiB,Sept 2025 avg weekly delivery (post-deployment; auto p95 inflated by earlier high period)
+RS01SBPS-SF01A-4A-NUTNRA101,64.56 MiB,Sept 2025 avg weekly delivery (post-deployment; auto p95 inflated by earlier high period)
