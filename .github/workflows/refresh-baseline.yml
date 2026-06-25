@@ -1,0 +1,50 @@
+name: Refresh KPI baseline
+
+# Regenerates original_expected.csv (the C1/C3 full-capacity denominator) from a
+# fresh multi-year crawl. MANUAL ONLY: this OVERWRITES the file, including any
+# hand-corrected baselines (see notes.md). Run deliberately, then re-apply and
+# commit any manual corrections. Kept off the weekly path because it is slow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "Baseline window start (YYYY-MM-DD); blank = last 2 years"
+        required: false
+      end:
+        description: "Baseline window end (YYYY-MM-DD); blank = today"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Crawl baseline
+        env:
+          START: ${{ inputs.start }}
+          END: ${{ inputs.end }}
+        run: |
+          ARGS=""
+          [ -n "$START" ] && ARGS="$ARGS --start $START"
+          [ -n "$END" ] && ARGS="$ARGS --end $END"
+          crawl_baseline $ARGS
+
+      - name: Commit baseline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add original_expected.csv
+          git diff --staged --quiet || git commit -m "Refresh KPI baseline (original_expected.csv)"
+          git push

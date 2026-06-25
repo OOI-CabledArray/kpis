@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rca_kpis"
+version = "0.1.0"
+description = "Delivery KPIs for the Regional Cabled Array (data delivered vs. expected)."
+authors = [
+  { name = "RCA Data Team", email = "jduprey@uw.edu" },
+]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "bs4",
+    "humanfriendly",
+    "loguru",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "requests",
+]
+
+[project.scripts]
+    crawl_archive = "rca_kpis.archive_crawler:cli"
+    crawl_baseline = "rca_kpis.archive_crawler:cli_baseline"
+    compute_kpi = "rca_kpis.kpi:cli"
+    plot_kpi = "rca_kpis.viz:cli"
+
+[tool.ruff]
+line-length = 95
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra"
+testpaths = ["tests"]

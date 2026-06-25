@@ -1,0 +1,127 @@
+"""Compute the delivery KPI: delivered vs. expected, per instrument-week.
+
+Both NSF metrics share one baseline (original_expected.csv, the full intended
+capacity) and differ only in the denominator:
+
+- C1 Technical (pct_technical) -- full capacity, shrunk for failed/reduced
+  instruments after their effective date (adjustments.csv).
+- C3 Retention (pct_retention) -- always the full original capacity.
+
+Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
+Expected == 0 (failed, or not in this archive) yields a blank KPI, not 0%.
+
+Outputs:
+- kpi_<date>.csv          one row per instrument-week (condensed, both metrics)
+- kpi_pivot_<metric>_<date>.csv   instruments x weeks grid of whole-percent
+                                  values, plus an unweighted mean-of-percents row.
+"""
+
+import argparse
+import csv
+import os
+from datetime import date
+from statistics import mean
+
+from humanfriendly import format_size, parse_size
+from loguru import logger
+
+MEAN_LABEL = "ALL_INSTRUMENTS_MEAN"
+
+
+def load_original(path):
+    """Per-instrument full-capacity p95 WEEKLY delivery (bytes) from crawl_baseline."""
+    if not os.path.exists(path):
+        logger.error(f"{path} missing -- run crawl_baseline first")
+        return {}
+    with open(path) as f:
+        return {r["refDes"]: int(r["original_p95_weekly_bytes"]) for r in csv.DictReader(f)}
+
+
+def load_adjustments(path):
+    """Failed/reduced overrides: {refDes: (status, effective_date, reduced_weekly_bytes)}."""
+    if not os.path.exists(path):
+        logger.warning(f"{path} missing -- no failed/reduced adjustments applied (C1 == C3)")
+        return {}
+    adj = {}
+    with open(path) as f:
+        for r in csv.DictReader(f):
+            status = r["status"].strip().lower()
+            eff = date.fromisoformat(r["effective_date"].strip())
+            reduced = parse_size(r["reduced_weekly"], binary=True) if r.get("reduced_weekly", "").strip() else 0
+            adj[r["refDes"].strip()] = (status, eff, reduced)
+    return adj
+
+
+def week_start(week):  # week label is already the Monday date (YYYY-MM-DD)
+    return date.fromisoformat(week)
+
+
+def pct(delivered, expected):
+    return round(100 * delivered / expected, 1) if expected > 0 else None  # 0 expected -> NA
+
+
+def write_pivot(records, instruments, weeks, key, out):
+    """instruments x weeks grid of whole-percent `key`, plus an unweighted mean row."""
+    grid = {(r["refDes"], r["week"]): r[key] for r in records}
+    with open(out, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["refDes", *weeks])
+        for inst in instruments:
+            w.writerow([inst, *("" if grid[(inst, wk)] is None else round(grid[(inst, wk)])
+                                for wk in weeks)])
+        avg = []
+        for wk in weeks:  # mean of the percentages (unweighted -- file size ignored)
+            vals = [grid[(i, wk)] for i in instruments if grid[(i, wk)] is not None]
+            avg.append(round(mean(vals)) if vals else "")
+        w.writerow([MEAN_LABEL, *avg])
+    logger.success(f"wrote {out} ({len(instruments)} instruments x {len(weeks)} weeks)")
+
+
+def main(rundate, original="original_expected.csv", adjustments="adjustments.csv"):
+    orig = load_original(original)
+    adj = load_adjustments(adjustments)
+    with open(f"weekly_delivery_{rundate}.csv") as f:
+        rows = list(csv.DictReader(f))
+
+    records = []
+    for r in rows:
+        rd, wk, d = r["refDes"], r["week"], int(r["delivered_bytes"])
+        c3 = c1 = orig.get(rd, 0)  # full intended weekly capacity (p95 of weekly delivery)
+        if rd in adj:
+            status, eff, reduced = adj[rd]
+            if week_start(wk) >= eff:
+                c1 = 0 if status == "failed" else reduced
+        records.append({
+            "refDes": rd, "week": wk,
+            "delivered_human": r["delivered_human"],
+            "c1_expected_human": format_size(c1, binary=True), "pct_technical": pct(d, c1),
+            "c3_expected_human": format_size(c3, binary=True), "pct_retention": pct(d, c3),
+        })
+
+    instruments = list(dict.fromkeys(r["refDes"] for r in rows))
+    weeks = list(dict.fromkeys(r["week"] for r in rows))
+
+    out = f"kpi_{rundate}.csv"
+    cols = ["refDes", "week", "delivered_human",
+            "c1_expected_human", "pct_technical", "c3_expected_human", "pct_retention"]
+    with open(out, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(records)
+    logger.success(f"wrote {out} ({len(records)} instrument-weeks)")
+
+    write_pivot(records, instruments, weeks, "pct_technical", f"kpi_pivot_technical_{rundate}.csv")
+    write_pivot(records, instruments, weeks, "pct_retention", f"kpi_pivot_retention_{rundate}.csv")
+
+
+def cli():
+    p = argparse.ArgumentParser(description="Compute delivery KPI (C1/C3) per instrument-week.")
+    p.add_argument("--date", default=str(date.today()), help="run date tag (matches crawl_archive --date)")
+    p.add_argument("--original", default="original_expected.csv", help="C3 baseline from crawl_baseline")
+    p.add_argument("--adjustments", default="adjustments.csv", help="failed/reduced instrument list")
+    a = p.parse_args()
+    main(a.date, a.original, a.adjustments)
+
+
+if __name__ == "__main__":
+    cli()

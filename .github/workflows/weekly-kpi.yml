@@ -1,0 +1,57 @@
+name: Weekly delivery KPI
+
+# Re-tabulates a rolling recent window every Monday (stateless -- so weeks heal
+# as late/backfilled data arrives) and commits the pivots + heatmaps under
+# reports/<date>/. Reads the tracked inputs adjustments.csv + original_expected.csv.
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"   # Mondays 12:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-kpi
+  cancel-in-progress: false
+
+jobs:
+  kpi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Crawl + compute + plot
+        run: |
+          DATE=$(date -u +%F)
+          echo "RUN_DATE=$DATE" >> "$GITHUB_ENV"
+          crawl_archive --date "$DATE"          # default window: last ~3 months (rolling)
+          compute_kpi --date "$DATE"
+          plot_kpi --metric technical --date "$DATE"
+          plot_kpi --metric retention --date "$DATE"
+
+      - name: Collect into reports/<date>/
+        run: |
+          DEST="reports/$RUN_DATE"
+          mkdir -p "$DEST"
+          cp "kpi_${RUN_DATE}.csv"                  "$DEST/kpi.csv"
+          cp "kpi_pivot_technical_${RUN_DATE}.csv"  "$DEST/kpi_pivot_technical.csv"
+          cp "kpi_pivot_retention_${RUN_DATE}.csv"  "$DEST/kpi_pivot_retention.csv"
+          cp "viz/kpi_heatmap_technical_${RUN_DATE}.png"  "$DEST/kpi_heatmap_technical.png"
+          cp "viz/kpi_heatmap_retention_${RUN_DATE}.png"  "$DEST/kpi_heatmap_retention.png"
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          git diff --staged --quiet || git commit -m "Weekly delivery KPI ${RUN_DATE}"
+          git push
