@@ -180,6 +180,10 @@ CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files;
 git-ignored (the ignore rules are anchored to root so the `reports/` copies are tracked).
 
 
-- **Seismic / geodetic instruments are not in this archive.** OBS, OBSSP, HYDLF, HPIES,
-  D1000 deliver to the IRIS/EarthScope DMC and have empty folders here, so they get a 0
-  baseline and a blank KPI (not 0%). Broadband hydrophones (HYDBB) *are* in this archive.
+- **Seismometers / low-frequency hydrophones are not in this archive.** OBS (OBSBBA,
+  OBSSPA) and HYDLF deliver to the IRIS/EarthScope DMC and have empty folders here, so they
+  get a 0 baseline and a blank KPI (not 0%). Broadband hydrophones (HYDBB), HPIES, and D1000
+  *are* in this archive and tallied normally.
+- **Some instruments use a non-standard folder name.** The D1000 temperature sensor logs
+  under the RAS fluid-sampler port (`RASFLA301_D1000`), not `D1000A301`. Such cases are
+  mapped in `PATH_OVERRIDES` in `archive_crawler.py`.

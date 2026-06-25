@@ -59,7 +59,16 @@ def listing(url):
     return dirs, files
 
 
+# Instruments whose archive folder name doesn't match their refDes instrument code.
+# e.g. the D1000 temperature sensor logs under the RAS fluid-sampler port folder.
+PATH_OVERRIDES = {
+    "RS03INT1-MJ03C-07-D1000A301": "RS03INT1/MJ03C/RASFLA301_D1000/",
+}
+
+
 def base_url(ref_des):
+    if ref_des in PATH_OVERRIDES:
+        return urljoin(ARCHIVE, PATH_OVERRIDES[ref_des])
     subsite, node, _port, instr = ref_des.split("-")
     return urljoin(ARCHIVE, f"{subsite}/{node}/{instr}/")
 
