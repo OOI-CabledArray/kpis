@@ -103,10 +103,11 @@ def write_pivot(records, instruments, weeks, key, out):
 
 def main(rundate, original="original_expected.csv", status_path="instrument_status.csv",
          overrides="baseline_overrides.csv"):
+    rd_dir = f"reports/{rundate}"
     orig = load_original(original)
     orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
     status = load_status(status_path)
-    with open(f"weekly_delivery_{rundate}.csv") as f:
+    with open(f"{rd_dir}/weekly_delivery.csv") as f:
         rows = list(csv.DictReader(f))
 
     records = []
@@ -128,7 +129,7 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
     instruments = sorted({r["refDes"] for r in rows}, key=lambda rd: (group_key(rd), rd))
     weeks = list(dict.fromkeys(r["week"] for r in rows))  # chronological as crawled
 
-    out = f"kpi_{rundate}.csv"
+    out = f"{rd_dir}/kpi.csv"
     cols = ["refDes", "week", "delivered_human",
             "c1_expected_human", "pct_technical", "c3_expected_human", "pct_retention"]
     with open(out, "w", newline="") as f:
@@ -137,8 +138,8 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
         w.writerows(records)
     logger.success(f"wrote {out} ({len(records)} instrument-weeks)")
 
-    write_pivot(records, instruments, weeks, "pct_technical", f"kpi_pivot_technical_{rundate}.csv")
-    write_pivot(records, instruments, weeks, "pct_retention", f"kpi_pivot_retention_{rundate}.csv")
+    write_pivot(records, instruments, weeks, "pct_technical", f"{rd_dir}/kpi_pivot_technical.csv")
+    write_pivot(records, instruments, weeks, "pct_retention", f"{rd_dir}/kpi_pivot_retention.csv")
 
 
 def cli():

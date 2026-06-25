@@ -22,10 +22,10 @@ Snapshot: run 2026-06-25, baseline window 2024-06..2026-06, report weeks
 | CE04OSPS-SF01B-4F-PCO2WA102 | 28.05 MiB | 32.4 KiB | ~886× | 0.1 | known stuck-sensor period (the old 129 MB/day files) inflated p95 |
 | RS01SBPS-SF01A-2D-PHSENA101 | 11.47 MiB | 216.5 KiB | ~54× | 1.8 | same signature — a multi-week burst of oversized files |
 
-→ **DONE (provisional):** both seeded into `baseline_overrides.csv` (PCO2WA102 = 33 KiB/wk,
-PHSENA101 = 217 KiB/wk) from their typical weekly delivery — verify against the weekly
-history (look for a distinct high-volume block vs steady) and adjust if needed. Likely
-also affects the other PCO2W in Group B.
+→ **DONE:** the entire PCO2W and PHSEN classes (15 instruments) are overridden in
+`baseline_overrides.csv` with their **Sept 2025 average weekly delivery** (PCO2W ~32–68 KiB,
+PHSEN ~140–225 KiB). After override they read ~92–100% (PCO2WA102 went 0.1% → 94%). A few
+low-min weeks are real short outages.
 
 ## Group B — moderate inflation, cause unclear (ratio ~2–8×)
 
@@ -39,12 +39,11 @@ also affects the other PCO2W in Group B.
 | RS03AXPS-SF03A-4F-PCO2WA301 | 68.1 KiB | 31.9 KiB | ~2.1× | 46.6 |
 | RS01SBPS-SF01A-4F-PCO2WA101 | 67.61 KiB | 32.2 KiB | ~2.1× | 47.6 |
 
-→ NUTNR/PARAD show the same pattern across two sites each (~4×, ~25%), which
-suggests a *systematic* change (array-wide sampling-rate change at some point in
-the 2-yr window?) rather than per-instrument failure. If sampling was reduced,
-these belong in `instrument_status.csv` as `reduced`; if the baseline caught a brief
-high-rate commissioning period, add a `baseline_overrides.csv` row. Determine the
-transition date from the weekly history (same method used for BOTPT).
+→ **DONE:** all NUTNR + PARAD baselines overridden in `baseline_overrides.csv` with their
+**Sept 2025 average weekly delivery** (NUTNR 64–80 MiB; PARAD ~70 MiB). The auto p95 was
+inflated by an earlier high period. After override: PARAD ~98–100%, NUTNR ~66–99%. NUTNRA101/102
+sit a bit below Sept levels (a mild real shortfall) — if that dip is an *expected* sampling
+change, add a `reduced` row to `instrument_status.csv` so C1 reads ~100% while C3 keeps the loss.
 
 ## Group C — cameras: high week-to-week variance (ratio ~2–6×)
 
@@ -57,12 +56,12 @@ transition date from the weekly history (same method used for BOTPT).
 | CE04OSBP-LV01C-06-CAMDSB106 | 21.62 GiB | 9.31 GiB | ~2.3× | 43.0 |
 | RS01SBPS-PC01A-07-CAMDSC102 | 35.73 GiB | 20.67 GiB | ~1.7× | 54.2 |
 
-→ Cameras deliver in bursts (image/clip counts vary week to week), so p95-weekly
-sits well above the typical week. Key question for the program: is the camera
-*supposed* to deliver continuously (then low % is a real retention loss) or is
-its volume inherently variable (then the p95 baseline over-states "expected" and
-should be replaced with a typical/median-based figure for cameras)? This is a
-methodology decision for the camera instrument class, not a per-instrument edit.
+→ **DONE:** all CAMDS baselines overridden in `baseline_overrides.csv` with their
+**Sept 2025 average weekly delivery**. Cameras deliver in bursts so p95-weekly over-stated the
+typical week. After override they read mixed (some weeks > Sept, capped to `100+` gold; some
+below) — Sept was a low month for several cameras, so revisit the reference basis if a cleaner
+~100% is wanted. Pivots cap at 100; over-delivery flagged gold in the heatmap. (CAMHDA301, the
+HD camera, was NOT overridden here — still on its auto p95; revisit separately if needed.)
 
 ## Already handled (in instrument_status.csv) — for reference
 

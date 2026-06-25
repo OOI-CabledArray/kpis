@@ -21,16 +21,18 @@ Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
 
 ```bash
 crawl_baseline     # occasional: full-capacity baseline  -> original_expected.csv
-crawl_archive      # the reporting window                -> weekly_delivery_<date>.csv
-compute_kpi        # delivered vs expected               -> kpi_<date>.csv + two pivots
-plot_kpi --metric technical    # heatmap -> viz/kpi_heatmap_technical_<date>.png
-plot_kpi --metric retention    # heatmap -> viz/kpi_heatmap_retention_<date>.png
+crawl_archive      # the reporting window                -> reports/<date>/weekly_delivery.csv
+compute_kpi        # delivered vs expected               -> reports/<date>/kpi.csv + two pivots
+plot_kpi --metric technical    # heatmap -> reports/<date>/kpi_heatmap_technical.png
+plot_kpi --metric retention    # heatmap -> reports/<date>/kpi_heatmap_retention.png
 ```
 
-All run-window outputs are tagged with the run date (default: today) so re-runs don't
-overwrite earlier results. Pass `--date` to chain steps for the same run on a later day.
-The curated inputs — `baseline_overrides.csv` and `instrument_status.csv` (and the auto
-`original_expected.csv`) — are **not** dated; they persist and are hand-editable.
+Every run writes all its outputs into a single dated folder, **`reports/<date>/`** (date
+defaults to today; pass `--date` to chain steps or target a past run). This is identical
+whether run locally or by the GitHub Action, and the folder is committed — so the heatmaps
+and CSVs accumulate as a browsable history. The curated inputs — `baseline_overrides.csv`,
+`instrument_status.csv`, and the auto `original_expected.csv` — live at the repo root, are
+**not** dated, and are hand-editable.
 
 # Example pipeline usage
 
@@ -46,7 +48,7 @@ crawl_archive --start 2025-10-01
 # 2. join delivered against baseline (+ overrides) + instrument status -> kpi + pivots
 compute_kpi
 
-# 3. heatmaps for each metric -> viz/kpi_heatmap_<metric>_<date>.png
+# 3. heatmaps for each metric -> reports/<date>/kpi_heatmap_<metric>.png
 plot_kpi --metric technical
 plot_kpi --metric retention
 ```
@@ -78,8 +80,8 @@ crawl_baseline --start 2024-06-01 --end 2026-06-01  # explicit window
 ### `crawl_archive` — the reporting window (delivered side)
 
 Walks `subsite/node/instrument/year/month[/day]/`, sums file sizes from the directory
-listing, and writes `weekly_delivery_<date>.csv`: delivered bytes per instrument × complete
-week (Mon-Sun, labeled by the Monday date; partial edge weeks are excluded).
+listing, and writes `reports/<date>/weekly_delivery.csv`: delivered bytes per instrument ×
+complete week (Mon-Sun, labeled by the Monday date; partial edge weeks are excluded).
 
 ```bash
 crawl_archive                                       # default: last 3 months
@@ -89,15 +91,16 @@ crawl_archive --date 2026-06-25                     # override the output date t
 
 ### `compute_kpi` — delivered vs expected (C1 + C3)
 
-Joins `weekly_delivery_<date>.csv` against the baseline (`original_expected.csv` with
+Joins `reports/<date>/weekly_delivery.csv` against the baseline (`original_expected.csv` with
 `baseline_overrides.csv` applied on top) and `instrument_status.csv`, writing one detailed
-CSV plus two pivots:
+CSV plus two pivots (all into `reports/<date>/`):
 
-- `kpi_<date>.csv` — one row per instrument-week: `delivered_human`, then C1
+- `kpi.csv` — one row per instrument-week: `delivered_human`, then C1
   (`c1_expected_human`, `pct_technical`) and C3 (`c3_expected_human`, `pct_retention`).
-- `kpi_pivot_technical_<date>.csv` and `kpi_pivot_retention_<date>.csv` — instruments × weeks
-  grids of **whole-percent** values, with a final `ALL_INSTRUMENTS_MEAN` row (the unweighted
-  mean of per-instrument percentages, so large files don't dominate small ones).
+- `kpi_pivot_technical.csv` and `kpi_pivot_retention.csv` — instruments × weeks grids of
+  **whole-percent** values (capped at 100; over-delivery shown as `100+`), with a final
+  `ALL_INSTRUMENTS_MEAN` row (the unweighted mean of per-instrument percentages, so large
+  files don't dominate small ones).
 
 ```bash
 compute_kpi                          # uses today's weekly_delivery + the curated inputs
@@ -107,7 +110,7 @@ compute_kpi --status instrument_status.csv --overrides baseline_overrides.csv
 
 ### `plot_kpi` — heatmap
 
-Renders a pivot as an instruments × weeks heatmap to `viz/kpi_heatmap_<metric>_<date>.png`.
+Renders a pivot as an instruments × weeks heatmap to `reports/<date>/kpi_heatmap_<metric>.png`.
 Blue = full delivery, red = under-delivery, gray = no expected delivery; each cell is
 annotated with its whole-percent value.
 
@@ -167,17 +170,17 @@ CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files;
 
 - **`.github/workflows/weekly-kpi.yml`** — runs Mondays (and on demand). Re-tabulates
   the rolling recent window from scratch (`crawl_archive` → `compute_kpi` → `plot_kpi`),
-  then commits the pivots + heatmaps to `reports/<date>/`. Stateless re-tabulation is
-  deliberate: recent weeks **heal as late/backfilled data arrives** (e.g. the hydrophone
-  `addendum/` Navy data), which a crawl-once-append would miss. It reads the tracked
+  then commits the whole `reports/<date>/` folder. Stateless re-tabulation is deliberate:
+  recent weeks **heal as late/backfilled data arrives** (e.g. the hydrophone `addendum/`
+  Navy data), which a crawl-once-append would miss. It reads the tracked
   `instrument_status.csv`, `baseline_overrides.csv`, and `original_expected.csv` from the checkout.
-- **`.github/workflows/refresh-baseline.yml`** — **manual only.** Regenerates
-  `original_expected.csv` from a fresh multi-year crawl and commits it. It **overwrites
-  hand-corrected baselines** (see `notes.md`), so run it deliberately and re-apply
-  corrections afterward. Kept off the weekly path because it's slow.
+  The CLIs write `reports/<date>/` directly, so a local run produces the identical layout.
+- **`.github/workflows/refresh-baseline.yml`** — **manual only.** Regenerates the auto
+  `original_expected.csv` from a fresh multi-year crawl and commits it. Curated corrections
+  live in `baseline_overrides.csv` (applied on top) and are **not** touched, so they survive;
+  still kept off the weekly path because it's slow and shifts the denominator — review the diff.
 
-`reports/<date>/` accumulates a browsable weekly history; root-level dated artifacts stay
-git-ignored (the ignore rules are anchored to root so the `reports/` copies are tracked).
+`reports/<date>/` accumulates a browsable weekly history (CSVs + heatmaps), tracked in git.
 
 
 - **Seismometers / low-frequency hydrophones are not in this archive.** OBS (OBSBBA,

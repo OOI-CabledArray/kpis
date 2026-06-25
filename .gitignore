@@ -127,11 +127,7 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
-# Generated KPI artifacts (regenerate with crawl_archive / compute_kpi / plot_kpi).
-# Anchored to repo root so committed copies under reports/ are NOT ignored.
-# instrument_status.csv, baseline_overrides.csv, original_expected.csv are inputs and ARE tracked.
-/weekly_delivery_*.csv
-/kpi_*.csv
-/viz/
+# KPI outputs are written to reports/<date>/ (CSVs + heatmaps) and ARE committed.
+# Inputs original_expected.csv, baseline_overrides.csv, instrument_status.csv are also tracked.
 
 .claude/settings.local.json

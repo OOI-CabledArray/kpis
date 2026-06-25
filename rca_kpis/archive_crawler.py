@@ -11,6 +11,7 @@ expected monthly volume -- the seed for the human-editable expected config.
 
 import argparse
 import csv
+import os
 import re
 import time
 from collections import defaultdict
@@ -183,7 +184,9 @@ def main(start=None, end=None, rundate=None):
     weeks = full_weeks(start, end)
     logger.info(f"{len(weeks)} complete weeks in window: {weeks[0]}..{weeks[-1]}" if weeks
                 else "no complete weeks in window")
-    write_weekly(results, weeks, f"weekly_delivery_{rundate}.csv")
+    rd_dir = f"reports/{rundate}"
+    os.makedirs(rd_dir, exist_ok=True)
+    write_weekly(results, weeks, f"{rd_dir}/weekly_delivery.csv")
 
 
 def main_baseline(start=None, end=None, out="original_expected.csv"):

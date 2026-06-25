@@ -26,8 +26,8 @@ TITLES = {
 
 
 def main(rundate, metric="technical"):
-    src = f"kpi_pivot_{metric}_{rundate}.csv"
-    out = f"viz/kpi_heatmap_{metric}_{rundate}.png"
+    src = f"reports/{rundate}/kpi_pivot_{metric}.csv"
+    out = f"reports/{rundate}/kpi_heatmap_{metric}.png"
     # cells are strings: "" (NA), "100+" (capped/over-delivered), or a whole percent
     grid = pd.read_csv(src, index_col="refDes", dtype=str, keep_default_na=False)
     arr = grid.to_numpy()
