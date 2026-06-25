@@ -2,7 +2,8 @@ name: Weekly delivery KPI
 
 # Re-tabulates a rolling recent window every Monday (stateless -- so weeks heal
 # as late/backfilled data arrives) and commits the pivots + heatmaps under
-# reports/<date>/. Reads the tracked inputs adjustments.csv + original_expected.csv.
+# reports/<date>/. Reads the tracked inputs instrument_status.csv, baseline_overrides.csv,
+# original_expected.csv.
 
 on:
   schedule:

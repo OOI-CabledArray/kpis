@@ -129,7 +129,7 @@ cython_debug/
 
 # Generated KPI artifacts (regenerate with crawl_archive / compute_kpi / plot_kpi).
 # Anchored to repo root so committed copies under reports/ are NOT ignored.
-# adjustments.csv and original_expected.csv are inputs and ARE tracked.
+# instrument_status.csv, baseline_overrides.csv, original_expected.csv are inputs and ARE tracked.
 /weekly_delivery_*.csv
 /kpi_*.csv
 /viz/

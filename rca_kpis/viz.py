@@ -28,7 +28,7 @@ TITLES = {
 def main(rundate, metric="technical"):
     src = f"kpi_pivot_{metric}_{rundate}.csv"
     out = f"viz/kpi_heatmap_{metric}_{rundate}.png"
-    grid = pd.read_csv(src, index_col="refDes").drop(index=MEAN_LABEL, errors="ignore")
+    grid = pd.read_csv(src, index_col="refDes")  # rows already grouped; MEAN row kept at bottom
     data = np.ma.masked_invalid(grid.to_numpy(dtype=float))  # blank cells -> masked
 
     cmap = plt.get_cmap("RdBu").copy()
@@ -42,6 +42,8 @@ def main(rundate, metric="technical"):
     ax.set_ylabel("instrument")
     ax.set_title(f"RCA delivery KPI — {TITLES[metric]}\n(blue = full, red = under, gray = not expected)")
     fig.colorbar(im, ax=ax, fraction=0.02, pad=0.01, label="% delivered")
+    if grid.index[-1] == MEAN_LABEL:  # separate the summary mean row from instruments
+        ax.axhline(grid.shape[0] - 1.5, color="black", linewidth=1.0)
 
     for i in range(grid.shape[0]):  # annotate each measured cell with its percent
         for j in range(grid.shape[1]):

@@ -1,10 +1,11 @@
 """Compute the delivery KPI: delivered vs. expected, per instrument-week.
 
-Both NSF metrics share one baseline (original_expected.csv, the full intended
-capacity) and differ only in the denominator:
+Both NSF metrics share one baseline -- original_expected.csv (auto, from
+crawl_baseline) with baseline_overrides.csv applied on top (curated corrections
+that survive a baseline refresh) -- and differ only in the denominator:
 
 - C1 Technical (pct_technical) -- full capacity, shrunk for failed/reduced
-  instruments after their effective date (adjustments.csv).
+  instruments after their effective date (instrument_status.csv).
 - C3 Retention (pct_retention) -- always the full original capacity.
 
 Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
@@ -37,23 +38,40 @@ def load_original(path):
         return {r["refDes"]: int(r["original_p95_weekly_bytes"]) for r in csv.DictReader(f)}
 
 
-def load_adjustments(path):
-    """Failed/reduced overrides: {refDes: (status, effective_date, reduced_weekly_bytes)}."""
+def load_status(path):
+    """Failed/reduced instruments: {refDes: (status, effective_date, reduced_weekly_bytes)}."""
     if not os.path.exists(path):
-        logger.warning(f"{path} missing -- no failed/reduced adjustments applied (C1 == C3)")
+        logger.warning(f"{path} missing -- no failed/reduced instruments applied (C1 == C3)")
         return {}
-    adj = {}
+    status = {}
     with open(path) as f:
         for r in csv.DictReader(f):
-            status = r["status"].strip().lower()
             eff = date.fromisoformat(r["effective_date"].strip())
             reduced = parse_size(r["reduced_weekly"], binary=True) if r.get("reduced_weekly", "").strip() else 0
-            adj[r["refDes"].strip()] = (status, eff, reduced)
-    return adj
+            status[r["refDes"].strip()] = (r["status"].strip().lower(), eff, reduced)
+    return status
+
+
+def load_overrides(path):
+    """Curated baseline corrections {refDes: bytes} applied on top of original_expected.csv.
+
+    Hand-maintained; crawl_baseline never touches it, so corrections survive a refresh.
+    """
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        return {r["refDes"].strip(): parse_size(r["original_p95_weekly"], binary=True)
+                for r in csv.DictReader(f) if r.get("original_p95_weekly", "").strip()}
 
 
 def week_start(week):  # week label is already the Monday date (YYYY-MM-DD)
     return date.fromisoformat(week)
+
+
+def group_key(ref_des):
+    """Instrument code after the last dash (e.g. CTDBPN106) -- sorting on it
+    clusters alike instruments (BOTPTA*, CTDBP*, HYDBB*, ...) together."""
+    return ref_des.rsplit("-", 1)[1]
 
 
 def pct(delivered, expected):
@@ -77,9 +95,11 @@ def write_pivot(records, instruments, weeks, key, out):
     logger.success(f"wrote {out} ({len(instruments)} instruments x {len(weeks)} weeks)")
 
 
-def main(rundate, original="original_expected.csv", adjustments="adjustments.csv"):
+def main(rundate, original="original_expected.csv", status_path="instrument_status.csv",
+         overrides="baseline_overrides.csv"):
     orig = load_original(original)
-    adj = load_adjustments(adjustments)
+    orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
+    status = load_status(status_path)
     with open(f"weekly_delivery_{rundate}.csv") as f:
         rows = list(csv.DictReader(f))
 
@@ -87,10 +107,10 @@ def main(rundate, original="original_expected.csv", adjustments="adjustments.csv
     for r in rows:
         rd, wk, d = r["refDes"], r["week"], int(r["delivered_bytes"])
         c3 = c1 = orig.get(rd, 0)  # full intended weekly capacity (p95 of weekly delivery)
-        if rd in adj:
-            status, eff, reduced = adj[rd]
+        if rd in status:
+            state, eff, reduced = status[rd]
             if week_start(wk) >= eff:
-                c1 = 0 if status == "failed" else reduced
+                c1 = 0 if state == "failed" else reduced
         records.append({
             "refDes": rd, "week": wk,
             "delivered_human": r["delivered_human"],
@@ -98,8 +118,9 @@ def main(rundate, original="original_expected.csv", adjustments="adjustments.csv
             "c3_expected_human": format_size(c3, binary=True), "pct_retention": pct(d, c3),
         })
 
-    instruments = list(dict.fromkeys(r["refDes"] for r in rows))
-    weeks = list(dict.fromkeys(r["week"] for r in rows))
+    records.sort(key=lambda r: (group_key(r["refDes"]), r["refDes"], r["week"]))
+    instruments = sorted({r["refDes"] for r in rows}, key=lambda rd: (group_key(rd), rd))
+    weeks = list(dict.fromkeys(r["week"] for r in rows))  # chronological as crawled
 
     out = f"kpi_{rundate}.csv"
     cols = ["refDes", "week", "delivered_human",
@@ -117,10 +138,11 @@ def main(rundate, original="original_expected.csv", adjustments="adjustments.csv
 def cli():
     p = argparse.ArgumentParser(description="Compute delivery KPI (C1/C3) per instrument-week.")
     p.add_argument("--date", default=str(date.today()), help="run date tag (matches crawl_archive --date)")
-    p.add_argument("--original", default="original_expected.csv", help="C3 baseline from crawl_baseline")
-    p.add_argument("--adjustments", default="adjustments.csv", help="failed/reduced instrument list")
+    p.add_argument("--original", default="original_expected.csv", help="auto baseline from crawl_baseline")
+    p.add_argument("--overrides", default="baseline_overrides.csv", help="curated baseline corrections")
+    p.add_argument("--status", default="instrument_status.csv", help="failed/reduced instrument list")
     a = p.parse_args()
-    main(a.date, a.original, a.adjustments)
+    main(a.date, a.original, a.status, a.overrides)
 
 
 if __name__ == "__main__":

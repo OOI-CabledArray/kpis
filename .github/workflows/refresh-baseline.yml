@@ -1,9 +1,10 @@
 name: Refresh KPI baseline
 
-# Regenerates original_expected.csv (the C1/C3 full-capacity denominator) from a
-# fresh multi-year crawl. MANUAL ONLY: this OVERWRITES the file, including any
-# hand-corrected baselines (see notes.md). Run deliberately, then re-apply and
-# commit any manual corrections. Kept off the weekly path because it is slow.
+# Regenerates original_expected.csv (the auto full-capacity baseline) from a fresh
+# multi-year crawl. MANUAL ONLY: it overwrites that file, but curated corrections
+# live in baseline_overrides.csv (applied on top by compute_kpi) and are NOT touched,
+# so they survive. Kept off the weekly path because it is slow and shifts the
+# denominator -- review the committed diff.
 
 on:
   workflow_dispatch:

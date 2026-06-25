@@ -29,8 +29,31 @@ plot_kpi --metric retention    # heatmap -> viz/kpi_heatmap_retention_<date>.png
 
 All run-window outputs are tagged with the run date (default: today) so re-runs don't
 overwrite earlier results. Pass `--date` to chain steps for the same run on a later day.
-The two inputs — `original_expected.csv` and `adjustments.csv` — are **not** dated; they
-persist and are hand-editable.
+The curated inputs — `baseline_overrides.csv` and `instrument_status.csv` (and the auto
+`original_expected.csv`) — are **not** dated; they persist and are hand-editable.
+
+# Example pipeline usage
+
+Report every full week since 2025-10-01 (through today), both metrics:
+
+```bash
+# 0. (once / occasional) build the full-capacity baseline -> original_expected.csv
+crawl_baseline
+
+# 1. crawl the delivered side over the reporting window (37 complete weeks)
+crawl_archive --start 2025-10-01
+
+# 2. join delivered against baseline (+ overrides) + instrument status -> kpi + pivots
+compute_kpi
+
+# 3. heatmaps for each metric -> viz/kpi_heatmap_<metric>_<date>.png
+plot_kpi --metric technical
+plot_kpi --metric retention
+```
+
+Steps 1–3 default `--date` to today; to re-run a past report on a later day, pass the same
+`--date YYYY-MM-DD` to all three. `crawl_baseline` is independent and only needs re-running
+occasionally.
 
 ## The CLIs
 
@@ -66,8 +89,9 @@ crawl_archive --date 2026-06-25                     # override the output date t
 
 ### `compute_kpi` — delivered vs expected (C1 + C3)
 
-Joins `weekly_delivery_<date>.csv` against `original_expected.csv` and `adjustments.csv`,
-writing one detailed CSV plus two pivots:
+Joins `weekly_delivery_<date>.csv` against the baseline (`original_expected.csv` with
+`baseline_overrides.csv` applied on top) and `instrument_status.csv`, writing one detailed
+CSV plus two pivots:
 
 - `kpi_<date>.csv` — one row per instrument-week: `delivered_human`, then C1
   (`c1_expected_human`, `pct_technical`) and C3 (`c3_expected_human`, `pct_retention`).
@@ -76,9 +100,9 @@ writing one detailed CSV plus two pivots:
   mean of per-instrument percentages, so large files don't dominate small ones).
 
 ```bash
-compute_kpi                          # uses today's weekly_delivery + the two inputs
+compute_kpi                          # uses today's weekly_delivery + the curated inputs
 compute_kpi --date 2026-06-25
-compute_kpi --adjustments adjustments.csv --original original_expected.csv
+compute_kpi --status instrument_status.csv --overrides baseline_overrides.csv
 ```
 
 ### `plot_kpi` — heatmap
@@ -93,10 +117,15 @@ plot_kpi --metric retention
 plot_kpi --metric retention --date 2026-06-25
 ```
 
-## The adjustments config (`adjustments.csv`)
+## Curated inputs
+
+Two hand-maintained files layer on top of the auto baseline. `crawl_baseline` never touches
+either, so curation survives a baseline refresh. Edit and re-run `compute_kpi` — no re-crawl.
+
+### `instrument_status.csv` — failed/reduced (the C1 adjustment)
 
 An **exceptions list** — only the failed/reduced instruments; everything else defaults to
-full expected. Columns:
+full expected.
 
 | column | meaning |
 |---|---|
@@ -108,13 +137,31 @@ full expected. Columns:
 ```csv
 refDes,status,effective_date,reduced_weekly
 CE02SHBP-LJ01D-06-CTDBPN106,failed,2026-04-25,
-RS03CCAL-MJ03F-05-BOTPTA301,reduced,2025-08-01,500 MiB
+RS03CCAL-MJ03F-05-BOTPTA301,reduced,2024-09-02,112 MiB
 ```
 
 `failed` → C1 expected 0 (→ blank KPI, drops out) after the date. `reduced` → C1 expected =
 `reduced_weekly` after the date. Before the date, full expected. C3 always uses the full
-baseline, so failed/reduced instruments still show their loss under retention. Edit the file
-and re-run `compute_kpi` — no re-crawl needed.
+baseline, so failed/reduced instruments still show their loss under retention.
+
+### `baseline_overrides.csv` — baseline corrections (C1 **and** C3)
+
+Corrects the auto baseline where the observed p95 is contaminated/atypical (e.g. a stuck
+sensor that inflated p95 with oversized files). The override replaces `original_expected.csv`
+for that instrument in **both** metrics. Because the expected baseline is observation-derived
+(p95 of recent weekly delivery), this file is how QA/QC curates it — and since `crawl_baseline`
+never writes here, those corrections persist across baseline refreshes.
+
+| column | meaning |
+|---|---|
+| `refDes` | instrument reference designator |
+| `original_p95_weekly` | corrected full-capacity weekly volume, human-readable (e.g. `33 KiB`) |
+| `note` | why it was corrected (free text) |
+
+```csv
+refDes,original_p95_weekly,note
+CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files; set to typical weekly delivery
+```
 
 ## Automation (GitHub Actions)
 
@@ -123,7 +170,7 @@ and re-run `compute_kpi` — no re-crawl needed.
   then commits the pivots + heatmaps to `reports/<date>/`. Stateless re-tabulation is
   deliberate: recent weeks **heal as late/backfilled data arrives** (e.g. the hydrophone
   `addendum/` Navy data), which a crawl-once-append would miss. It reads the tracked
-  `adjustments.csv` + `original_expected.csv` straight from the checkout.
+  `instrument_status.csv`, `baseline_overrides.csv`, and `original_expected.csv` from the checkout.
 - **`.github/workflows/refresh-baseline.yml`** — **manual only.** Regenerates
   `original_expected.csv` from a fresh multi-year crawl and commits it. It **overwrites
   hand-corrected baselines** (see `notes.md`), so run it deliberately and re-apply
