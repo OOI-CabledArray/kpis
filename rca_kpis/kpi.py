@@ -112,8 +112,8 @@ def write_pivot(records, instruments, weeks, key, out):
     logger.success(f"wrote {out} ({len(instruments)} instruments x {len(weeks)} weeks)")
 
 
-def main(rundate, original="original_expected.csv", status_path="instrument_status.csv",
-         overrides="baseline_overrides.csv"):
+def main(rundate, original="config/original_expected.csv", status_path="config/instrument_status.csv",
+         overrides="config/baseline_overrides.csv"):
     rd_dir = f"reports/{rundate}"
     orig = load_original(original)
     orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
@@ -161,9 +161,9 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
 def cli():
     p = argparse.ArgumentParser(description="Compute delivery KPI (C1/C3) per instrument-week.")
     p.add_argument("--date", default=str(date.today()), help="run date tag (matches crawl_archive --date)")
-    p.add_argument("--original", default="original_expected.csv", help="auto baseline from crawl_baseline")
-    p.add_argument("--overrides", default="baseline_overrides.csv", help="curated baseline corrections")
-    p.add_argument("--status", default="instrument_status.csv", help="failed/reduced instrument list")
+    p.add_argument("--original", default="config/original_expected.csv", help="auto baseline from crawl_baseline")
+    p.add_argument("--overrides", default="config/baseline_overrides.csv", help="curated baseline corrections")
+    p.add_argument("--status", default="config/instrument_status.csv", help="failed/reduced instrument list")
     a = p.parse_args()
     main(a.date, a.original, a.status, a.overrides)
 

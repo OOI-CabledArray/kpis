@@ -24,7 +24,7 @@ independent (a QC-quality measure of the data that did arrive).
 ## Quick start
 
 ```bash
-crawl_baseline     # occasional: full-capacity baseline  -> original_expected.csv
+crawl_baseline     # occasional: full-capacity baseline  -> config/original_expected.csv
 crawl_archive      # C1/C3 delivered side                -> reports/<date>/weekly_delivery.csv
 crawl_science      # C2 QARTOD pass-rate from zarr (slow) -> reports/<date>/weekly_science.csv
 compute_kpi        # join all three                      -> reports/<date>/kpi.csv + three pivots
@@ -36,16 +36,16 @@ plot_kpi --metric science
 Every run writes all its outputs into a single dated folder, **`reports/<date>/`** (date
 defaults to today; pass `--date` to chain steps or target a past run). This is identical
 whether run locally or by the GitHub Action, and the folder is committed — so the heatmaps
-and CSVs accumulate as a browsable history. The curated inputs — `baseline_overrides.csv`,
-`instrument_status.csv`, and the auto `original_expected.csv` — live at the repo root, are
-**not** dated, and are hand-editable.
+and CSVs accumulate as a browsable history. The inputs — `config/baseline_overrides.csv`,
+`config/instrument_status.csv`, and the auto `config/original_expected.csv` — live in
+`config/`, are **not** dated, and are hand-editable.
 
 # Example pipeline usage
 
 Report every full week since 2025-10-01 (through today), all three metrics:
 
 ```bash
-# 0. (once / occasional) build the full-capacity baseline -> original_expected.csv
+# 0. (once / occasional) build the full-capacity baseline -> config/original_expected.csv
 crawl_baseline
 
 # 1. C1/C3 delivered side over the reporting window (37 complete weeks)
@@ -71,7 +71,7 @@ occasionally.
 
 ### `crawl_baseline` — full-capacity baseline (C3 denominator)
 
-Crawls a recent window (default: last 2 years) and writes `original_expected.csv`. The
+Crawls a recent window (default: last 2 years) and writes `config/original_expected.csv`. The
 baseline column is **`original_p95_weekly_bytes`** — the **p95 of weekly delivery** per
 instrument, its demonstrated full-rate weekly capacity (the `_human` column is just a
 readable mirror).
@@ -133,7 +133,7 @@ Joins `reports/<date>/weekly_delivery.csv` against the baseline (`original_expec
 ```bash
 compute_kpi                          # uses today's reports/<date>/ + the curated inputs
 compute_kpi --date 2026-06-25
-compute_kpi --status instrument_status.csv --overrides baseline_overrides.csv
+compute_kpi --status config/instrument_status.csv --overrides config/baseline_overrides.csv
 ```
 
 ### `plot_kpi` — heatmap
@@ -148,12 +148,13 @@ plot_kpi --metric retention
 plot_kpi --metric retention --date 2026-06-25
 ```
 
-## Curated inputs
+## Curated inputs (in `config/`)
 
-Two hand-maintained files layer on top of the auto baseline. `crawl_baseline` never touches
-either, so curation survives a baseline refresh. Edit and re-run `compute_kpi` — no re-crawl.
+Two hand-maintained files in `config/` layer on top of the auto baseline
+(`config/original_expected.csv`). `crawl_baseline` never touches them, so curation survives a
+baseline refresh. Edit and re-run `compute_kpi` — no re-crawl.
 
-### `instrument_status.csv` — failed/reduced (the C1 adjustment)
+### `config/instrument_status.csv` — failed/reduced (the C1 adjustment)
 
 An **exceptions list** — only the failed/reduced instruments; everything else defaults to
 full expected.
@@ -175,7 +176,7 @@ RS03CCAL-MJ03F-05-BOTPTA301,reduced,2024-09-02,112 MiB
 `reduced_weekly` after the date. Before the date, full expected. C3 always uses the full
 baseline, so failed/reduced instruments still show their loss under retention.
 
-### `baseline_overrides.csv` — baseline corrections (C1 **and** C3)
+### `config/baseline_overrides.csv` — baseline corrections (C1 **and** C3)
 
 Corrects the auto baseline where the observed p95 is contaminated/atypical (e.g. a stuck
 sensor that inflated p95 with oversized files). The override replaces `original_expected.csv`

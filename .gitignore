@@ -128,6 +128,6 @@ cython_debug/
 .ruff_cache/
 
 # KPI outputs are written to reports/<date>/ (CSVs + heatmaps) and ARE committed.
-# Inputs original_expected.csv, baseline_overrides.csv, instrument_status.csv are also tracked.
+# Inputs in config/ (original_expected.csv, baseline_overrides.csv, instrument_status.csv) are tracked.
 
 .claude/settings.local.json

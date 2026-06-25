@@ -189,7 +189,7 @@ def main(start=None, end=None, rundate=None):
     write_weekly(results, weeks, f"{rd_dir}/weekly_delivery.csv")
 
 
-def main_baseline(start=None, end=None, out="original_expected.csv"):
+def main_baseline(start=None, end=None, out="config/original_expected.csv"):
     """Per-instrument p95 of WEEKLY delivery over a recent window (full-capacity baseline).
 
     Uses a recent window (default: last 2 years), not deployment-era data: file
@@ -207,6 +207,7 @@ def main_baseline(start=None, end=None, out="original_expected.csv"):
         results = list(pool.map(crawl, ref_dess))
     dt = time.perf_counter() - t0
     logger.info(f"crawled {len(ref_dess)} instruments in {dt:.0f}s ({dt / len(ref_dess):.1f}s each)")
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     with open(out, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["refDes", "first_day", "last_day", "weeks_with_data",

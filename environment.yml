@@ -1,19 +1,10 @@
 name: rca-kpis
+# Conda env just provides Python + pip; package deps live in pyproject.toml (single
+# source of truth) and are installed via `pip install -e .` below.
 channels:
   - conda-forge
 dependencies:
   - python>=3.10
   - pip
-  - bs4
-  - dask
-  - humanfriendly
-  - loguru
-  - matplotlib
-  - numpy
-  - pandas
-  - requests
-  - s3fs
-  - xarray
-  - zarr
   - pip:
       - -e .
