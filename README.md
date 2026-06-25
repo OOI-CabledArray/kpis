@@ -11,20 +11,11 @@ Two NSF metrics are produced side by side. They share one baseline — the full
 intended weekly capacity (`original_expected.csv`) — and differ only in the denominator:
 
 - **C1 Technical** (`pct_technical`) — full capacity, shrunk for **failed** (→ 0) and
-  **reduced** (→ a user-set amount) instruments after their effective date. "Did the
-  data we currently expect arrive?"
+  **reduced** (→ set by QA/QC based on instrument performance) instruments after their effective date. "Did the data we currently expect arrive?"
 - **C3 Retention** (`pct_retention`) — always the full original capacity, never shrunk.
-  "What did we lose overall?" A failed or down-sampled instrument reads low here — the point.
+  "What did we lose overall?" A failed or down-sampled instrument reads low here.
 
 Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
-(C2 Science is out of scope: it needs QA/QC'd + QARTOD data, a different source.)
-
-## Setup
-
-```bash
-conda env create -f environment.yml
-conda activate rca-kpis
-```
 
 ## Quick start
 
@@ -141,13 +132,7 @@ and re-run `compute_kpi` — no re-crawl needed.
 `reports/<date>/` accumulates a browsable weekly history; root-level dated artifacts stay
 git-ignored (the ignore rules are anchored to root so the `reports/` copies are tracked).
 
-## Caveats
 
-- **Sizes are from the directory listing** (`4.5K` → 4608 B, binary) — accurate to ~3 sig
-  figs, fine for delivery ratios; not byte-exact.
 - **Seismic / geodetic instruments are not in this archive.** OBS, OBSSP, HYDLF, HPIES,
   D1000 deliver to the IRIS/EarthScope DMC and have empty folders here, so they get a 0
   baseline and a blank KPI (not 0%). Broadband hydrophones (HYDBB) *are* in this archive.
-- **High week-to-week variance** (e.g. cameras) or a **malfunction baseline** (a stuck sensor
-  inflating p95) can make an instrument read low even while delivering normally. Correct its
-  row in `original_expected.csv` or capture the change in `adjustments.csv`.
