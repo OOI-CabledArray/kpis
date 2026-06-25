@@ -22,6 +22,7 @@ from rca_kpis.kpi import MEAN_LABEL  # noqa: E402
 TITLES = {
     "technical": "C1 Technical availability (delivered / expected)",
     "retention": "C3 Retention (delivered / original expected)",
+    "science": "C2 Science (zarr data passing QARTOD)",
 }
 
 

@@ -1,0 +1,19 @@
+name: rca-kpis
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - pip
+  - bs4
+  - dask
+  - humanfriendly
+  - loguru
+  - matplotlib
+  - numpy
+  - pandas
+  - requests
+  - s3fs
+  - xarray
+  - zarr
+  - pip:
+      - -e .

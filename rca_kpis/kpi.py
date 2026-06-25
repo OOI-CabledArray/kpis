@@ -64,6 +64,15 @@ def load_overrides(path):
                 for r in csv.DictReader(f) if r.get("original_p95_weekly", "").strip()}
 
 
+def load_science(path):
+    """C2 QARTOD pass-rate {(refDes, week): pct_science} from crawl_science (optional)."""
+    if not os.path.exists(path):
+        logger.warning(f"{path} missing -- run crawl_science for C2; pct_science will be blank")
+        return {}
+    with open(path) as f:
+        return {(r["refDes"], r["week"]): float(r["pct_science"]) for r in csv.DictReader(f)}
+
+
 def week_start(week):  # week label is already the Monday date (YYYY-MM-DD)
     return date.fromisoformat(week)
 
@@ -107,6 +116,7 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
     orig = load_original(original)
     orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
     status = load_status(status_path)
+    science = load_science(f"{rd_dir}/weekly_science.csv")  # C2 (optional)
     with open(f"{rd_dir}/weekly_delivery.csv") as f:
         rows = list(csv.DictReader(f))
 
@@ -123,6 +133,7 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
             "delivered_human": r["delivered_human"],
             "c1_expected_human": format_size(c1, binary=True), "pct_technical": pct(d, c1),
             "c3_expected_human": format_size(c3, binary=True), "pct_retention": pct(d, c3),
+            "pct_science": science.get((rd, wk)),  # C2: blank where no zarr (gray)
         })
 
     records.sort(key=lambda r: (group_key(r["refDes"]), r["refDes"], r["week"]))
@@ -131,7 +142,8 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
 
     out = f"{rd_dir}/kpi.csv"
     cols = ["refDes", "week", "delivered_human",
-            "c1_expected_human", "pct_technical", "c3_expected_human", "pct_retention"]
+            "c1_expected_human", "pct_technical", "c3_expected_human", "pct_retention",
+            "pct_science"]
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
@@ -140,6 +152,7 @@ def main(rundate, original="original_expected.csv", status_path="instrument_stat
 
     write_pivot(records, instruments, weeks, "pct_technical", f"{rd_dir}/kpi_pivot_technical.csv")
     write_pivot(records, instruments, weeks, "pct_retention", f"{rd_dir}/kpi_pivot_retention.csv")
+    write_pivot(records, instruments, weeks, "pct_science", f"{rd_dir}/kpi_pivot_science.csv")
 
 
 def cli():

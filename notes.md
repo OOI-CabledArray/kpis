@@ -72,5 +72,17 @@ HD camera, was NOT overridden here — still on its auto p95; revisit separately
 
 ## Not flagged here
 
-- Seismic/geodetic (OBS, OBSSP, HYDLF, HPIES, D1000) deliver to IRIS, not this
+- Seismometers / low-freq hydrophones (OBS, OBSSP, HYDLF) deliver to IRIS, not this
   archive → 0 baseline → blank KPI (correctly excluded, not a problem to fix).
+  (HPIES and D1000 ARE in this archive and tallied — D1000 via the RASFLA301_D1000 path.)
+
+## C2 (science / QARTOD) follow-ups
+
+C2 = % of present zarr data without a QARTOD fail flag (flag 4), avg across params, per
+week. 59 instruments have a QARTOD zarr; overall ~92%. Flagged low readers for the QC team:
+
+- **All three PAR sensors read 0%** — PARADA101/102/301 `par_qartod_results` is **entirely
+  flag 4**. Identical across all 3 sites ⇒ almost certainly a mis-set PAR QARTOD test
+  (e.g. gross-range), not 3 sensor failures. Highest priority to investigate.
+- Partial fails worth a look: PCO2WA101 (~52%), PHSENA108 (~73%), FLORTD104/301 (~73–77%).
+- Instruments with no zarr (ADCP, cameras, hydrophones, seismic, …) have no QARTOD → gray.

@@ -15,14 +15,17 @@ conda run -n rca-kpis <cmd>      # e.g. conda run -n rca-kpis compute_kpi
 ## "The pipeline" = three steps
 
 ```bash
-crawl_archive --start <date>   # -> reports/<date>/weekly_delivery.csv
-compute_kpi                    # -> reports/<date>/kpi.csv + the two pivots
-plot_kpi --metric technical    # -> reports/<date>/kpi_heatmap_technical.png
+crawl_archive --start <date>   # C1/C3 delivered side -> reports/<date>/weekly_delivery.csv
+crawl_science --start <date>   # C2 QARTOD from zarr  -> reports/<date>/weekly_science.csv (slow: opens S3 zarr)
+compute_kpi                    # -> reports/<date>/kpi.csv + three pivots (C1/C2/C3)
+plot_kpi --metric technical    # also: --metric retention | science
 plot_kpi --metric retention
+plot_kpi --metric science
 ```
 
 `crawl_baseline` (rebuilds `original_expected.csv`) is **not** part of the pipeline — it's
-slow and shifts the C1/C3 denominator. Run it only when explicitly asked.
+slow and shifts the C1/C3 denominator. Run it only when explicitly asked. `compute_kpi`
+folds in C2 if `reports/<date>/weekly_science.csv` exists, else `pct_science` is blank.
 
 ## Editing baselines: use `baseline_overrides.csv`, not `original_expected.csv`
 

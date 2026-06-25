@@ -2,29 +2,33 @@
 
 Tools for delivery of KPIs to NSF for the Regional Cabled Array.
 
-The delivery KPI is `delivered ÷ expected × 100`, **per instrument per week**
-(Mon-Sun, labeled by the Monday start date),
-computed from file sizes in the [OOI raw data archive](https://rawdata.oceanobservatories.org/files/)
+KPIs are reported **per instrument per week** (Mon-Sun, labeled by the Monday start date)
 for every reference designator in [`sitesDictionary.csv`](https://github.com/OOI-CabledArray/rca-data-tools/tree/main/rca_data_tools/qaqc/params).
+Three NSF metrics are produced side by side:
 
-Two NSF metrics are produced side by side. They share one baseline — the full
-intended weekly capacity (`original_expected.csv`) — and differ only in the denominator:
+- **C1 Technical** (`pct_technical`) — `delivered ÷ expected`, from raw-archive file sizes.
+  Expected = the full intended weekly capacity (`original_expected.csv`), shrunk for
+  **failed** (→ 0) and **reduced** (→ set by QA/QC) instruments after their effective date.
+  "Did the data we currently expect arrive?"
+- **C3 Retention** (`pct_retention`) — same numerator, but always ÷ the full original
+  capacity (never shrunk). "What did we lose overall?" Failed/down-sampled instruments read low.
+- **C2 Science** (`pct_science`) — % of **present zarr data without a QARTOD fail flag**
+  (flag 4), averaged across parameters, per week. From the QC'd zarr datasets, not the raw
+  archive. Instruments with no zarr have no QARTOD and render gray.
 
-- **C1 Technical** (`pct_technical`) — full capacity, shrunk for **failed** (→ 0) and
-  **reduced** (→ set by QA/QC based on instrument performance) instruments after their effective date. "Did the data we currently expect arrive?"
-- **C3 Retention** (`pct_retention`) — always the full original capacity, never shrunk.
-  "What did we lose overall?" A failed or down-sampled instrument reads low here.
-
-Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
+Healthy instruments get C1 == C3; they diverge only for failed/reduced ones. C2 is
+independent (a QC-quality measure of the data that did arrive).
 
 ## Quick start
 
 ```bash
 crawl_baseline     # occasional: full-capacity baseline  -> original_expected.csv
-crawl_archive      # the reporting window                -> reports/<date>/weekly_delivery.csv
-compute_kpi        # delivered vs expected               -> reports/<date>/kpi.csv + two pivots
-plot_kpi --metric technical    # heatmap -> reports/<date>/kpi_heatmap_technical.png
-plot_kpi --metric retention    # heatmap -> reports/<date>/kpi_heatmap_retention.png
+crawl_archive      # C1/C3 delivered side                -> reports/<date>/weekly_delivery.csv
+crawl_science      # C2 QARTOD pass-rate from zarr (slow) -> reports/<date>/weekly_science.csv
+compute_kpi        # join all three                      -> reports/<date>/kpi.csv + three pivots
+plot_kpi --metric technical    # -> reports/<date>/kpi_heatmap_technical.png
+plot_kpi --metric retention    #    (also --metric science)
+plot_kpi --metric science
 ```
 
 Every run writes all its outputs into a single dated folder, **`reports/<date>/`** (date
@@ -36,25 +40,29 @@ and CSVs accumulate as a browsable history. The curated inputs — `baseline_ove
 
 # Example pipeline usage
 
-Report every full week since 2025-10-01 (through today), both metrics:
+Report every full week since 2025-10-01 (through today), all three metrics:
 
 ```bash
 # 0. (once / occasional) build the full-capacity baseline -> original_expected.csv
 crawl_baseline
 
-# 1. crawl the delivered side over the reporting window (37 complete weeks)
+# 1. C1/C3 delivered side over the reporting window (37 complete weeks)
 crawl_archive --start 2025-10-01
 
-# 2. join delivered against baseline (+ overrides) + instrument status -> kpi + pivots
+# 2. C2 QARTOD pass-rate from the zarr datasets (slow -- opens S3 zarr per instrument)
+crawl_science --start 2025-10-01
+
+# 3. join delivered + baseline/overrides + instrument status + QARTOD -> kpi + 3 pivots
 compute_kpi
 
-# 3. heatmaps for each metric -> reports/<date>/kpi_heatmap_<metric>.png
+# 4. heatmaps for each metric -> reports/<date>/kpi_heatmap_<metric>.png
 plot_kpi --metric technical
 plot_kpi --metric retention
+plot_kpi --metric science
 ```
 
-Steps 1–3 default `--date` to today; to re-run a past report on a later day, pass the same
-`--date YYYY-MM-DD` to all three. `crawl_baseline` is independent and only needs re-running
+Steps 1–4 default `--date` to today; to re-run a past report on a later day, pass the same
+`--date YYYY-MM-DD` to all of them. `crawl_baseline` is independent and only needs re-running
 occasionally.
 
 ## The CLIs
@@ -89,21 +97,36 @@ crawl_archive --start 2026-03-01 --end 2026-06-01   # explicit window
 crawl_archive --date 2026-06-25                     # override the output date tag
 ```
 
-### `compute_kpi` — delivered vs expected (C1 + C3)
+### `crawl_science` — QARTOD pass-rate from zarr (C2)
 
-Joins `reports/<date>/weekly_delivery.csv` against the baseline (`original_expected.csv` with
-`baseline_overrides.csv` applied on top) and `instrument_status.csv`, writing one detailed
-CSV plus two pivots (all into `reports/<date>/`):
-
-- `kpi.csv` — one row per instrument-week: `delivered_human`, then C1
-  (`c1_expected_human`, `pct_technical`) and C3 (`c3_expected_human`, `pct_retention`).
-- `kpi_pivot_technical.csv` and `kpi_pivot_retention.csv` — instruments × weeks grids of
-  **whole-percent** values (capped at 100; over-delivery shown as `100+`), with a final
-  `ALL_INSTRUMENTS_MEAN` row (the unweighted mean of per-instrument percentages, so large
-  files don't dominate small ones).
+For each instrument with a `zarrFile`, opens its zarr from S3 (`ooi-data/`), reads the
+`*_qartod_results` variables, slices to the window, and per ISO week computes the **average
+across parameters of the fraction of points not flagged fail (4)**. Writes
+`reports/<date>/weekly_science.csv` (`refDes, week, pct_science`). Slow — it opens an S3
+zarr per instrument — so it's a distinct step; instruments without a zarr are omitted (gray).
 
 ```bash
-compute_kpi                          # uses today's weekly_delivery + the curated inputs
+crawl_science                                       # default: last 3 months
+crawl_science --start 2025-10-01 --date 2026-06-25
+```
+
+### `compute_kpi` — join into C1 + C3 + C2
+
+Joins `reports/<date>/weekly_delivery.csv` against the baseline (`original_expected.csv` with
+`baseline_overrides.csv` applied on top) and `instrument_status.csv`, and folds in
+`reports/<date>/weekly_science.csv` if present, writing one detailed CSV plus three pivots
+(all into `reports/<date>/`):
+
+- `kpi.csv` — one row per instrument-week: `delivered_human`, then C1
+  (`c1_expected_human`, `pct_technical`), C3 (`c3_expected_human`, `pct_retention`), and
+  C2 (`pct_science`).
+- `kpi_pivot_{technical,retention,science}.csv` — instruments × weeks grids of
+  **whole-percent** values (capped at 100; over-delivery shown as `100+`), with a final
+  `ALL_INSTRUMENTS_MEAN` row (the unweighted mean of per-instrument percentages, so large
+  files don't dominate small ones). C2 is blank (gray) for instruments without a zarr.
+
+```bash
+compute_kpi                          # uses today's reports/<date>/ + the curated inputs
 compute_kpi --date 2026-06-25
 compute_kpi --status instrument_status.csv --overrides baseline_overrides.csv
 ```
@@ -169,8 +192,8 @@ CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files;
 ## Automation (GitHub Actions)
 
 - **`.github/workflows/weekly-kpi.yml`** — runs Mondays (and on demand). Re-tabulates
-  the rolling recent window from scratch (`crawl_archive` → `compute_kpi` → `plot_kpi`),
-  then commits the whole `reports/<date>/` folder. Stateless re-tabulation is deliberate:
+  the rolling recent window from scratch (`crawl_archive` → `crawl_science` → `compute_kpi`
+  → `plot_kpi` ×3), then commits the whole `reports/<date>/` folder. Stateless re-tabulation is deliberate:
   recent weeks **heal as late/backfilled data arrives** (e.g. the hydrophone `addendum/`
   Navy data), which a crawl-once-append would miss. It reads the tracked
   `instrument_status.csv`, `baseline_overrides.csv`, and `original_expected.csv` from the checkout.

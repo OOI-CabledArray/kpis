@@ -34,10 +34,12 @@ jobs:
         run: |
           DATE=$(date -u +%F)
           echo "RUN_DATE=$DATE" >> "$GITHUB_ENV"
-          crawl_archive --date "$DATE"          # default window: last ~3 months (rolling)
+          crawl_archive --date "$DATE"          # C1/C3 delivered side (rolling ~3 months)
+          crawl_science --date "$DATE"          # C2 QARTOD pass-rate from zarr (slow)
           compute_kpi --date "$DATE"            # all outputs land in reports/$DATE/
           plot_kpi --metric technical --date "$DATE"
           plot_kpi --metric retention --date "$DATE"
+          plot_kpi --metric science --date "$DATE"
 
       - name: Commit report
         run: |

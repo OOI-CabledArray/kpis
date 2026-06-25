@@ -18,17 +18,22 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "bs4",
+    "dask",
     "humanfriendly",
     "loguru",
     "matplotlib",
     "numpy",
     "pandas",
     "requests",
+    "s3fs",
+    "xarray",
+    "zarr",
 ]
 
 [project.scripts]
     crawl_archive = "rca_kpis.archive_crawler:cli"
     crawl_baseline = "rca_kpis.archive_crawler:cli_baseline"
+    crawl_science = "rca_kpis.science:cli"
     compute_kpi = "rca_kpis.kpi:cli"
     plot_kpi = "rca_kpis.viz:cli"
 
