@@ -79,17 +79,23 @@ def pct(delivered, expected):
 
 
 def write_pivot(records, instruments, weeks, key, out):
-    """instruments x weeks grid of whole-percent `key`, plus an unweighted mean row."""
+    """instruments x weeks grid of whole-percent `key`, capped at 100 (over-delivery
+    shown as '100+'), plus an unweighted mean row computed on the capped values."""
     grid = {(r["refDes"], r["week"]): r[key] for r in records}
+
+    def cell(v):
+        if v is None:
+            return ""
+        return "100+" if v > 100 else round(v)
+
     with open(out, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["refDes", *weeks])
         for inst in instruments:
-            w.writerow([inst, *("" if grid[(inst, wk)] is None else round(grid[(inst, wk)])
-                                for wk in weeks)])
+            w.writerow([inst, *(cell(grid[(inst, wk)]) for wk in weeks)])
         avg = []
-        for wk in weeks:  # mean of the percentages (unweighted -- file size ignored)
-            vals = [grid[(i, wk)] for i in instruments if grid[(i, wk)] is not None]
+        for wk in weeks:  # unweighted mean of the capped percentages (file size ignored)
+            vals = [min(grid[(i, wk)], 100) for i in instruments if grid[(i, wk)] is not None]
             avg.append(round(mean(vals)) if vals else "")
         w.writerow([MEAN_LABEL, *avg])
     logger.success(f"wrote {out} ({len(instruments)} instruments x {len(weeks)} weeks)")

@@ -1,3 +1,9 @@
 refDes,original_p95_weekly,note
 CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor 129MB files; set to typical weekly delivery (verify)
 RS01SBPS-SF01A-2D-PHSENA101,217 KiB,auto p95 inflated by oversized-file burst; set to typical weekly delivery (verify)
+CE02SHBP-MJ01C-08-CAMDSB107,17.91 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+CE04OSBP-LV01C-06-CAMDSB106,16.98 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+RS01SBPS-PC01A-07-CAMDSC102,13.29 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+RS01SUM2-MJ01B-05-CAMDSB103,13.9 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+RS03AXPS-PC03A-07-CAMDSC302,14.79 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
+RS03INT1-MJ03C-05-CAMDSB303,5.85 GiB,Sept 2025 avg weekly delivery (camera p95 over-stated by burst variance)
