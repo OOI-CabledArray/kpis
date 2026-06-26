@@ -64,6 +64,20 @@ def load_overrides(path):
                 for r in csv.DictReader(f) if r.get("original_p95_weekly", "").strip()}
 
 
+def load_exclusions(path):
+    """{refDes: set(metrics)} to grey out per metric. `metrics` is space-separated
+    technical/retention/science, or `all`. e.g. a bad QARTOD test -> exclude 'science' only."""
+    if not os.path.exists(path):
+        return {}
+    everything = {"technical", "retention", "science"}
+    out = {}
+    with open(path) as f:
+        for r in csv.DictReader(f):
+            m = r["metrics"].strip().lower()
+            out[r["refDes"].strip()] = everything if m == "all" else set(m.split())
+    return out
+
+
 def load_science(path):
     """C2 from crawl_science (optional): {(refDes, week): (pct_science, pct_climatology)}."""
     if not os.path.exists(path):
@@ -113,11 +127,12 @@ def write_pivot(records, instruments, weeks, key, out):
 
 
 def main(rundate, original="config/original_expected.csv", status_path="config/instrument_status.csv",
-         overrides="config/baseline_overrides.csv"):
+         overrides="config/baseline_overrides.csv", exclusions="config/exclusions.csv"):
     rd_dir = f"reports/{rundate}"
     orig = load_original(original)
     orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
     status = load_status(status_path)
+    excl = load_exclusions(exclusions)  # per-metric grey-outs (bad test, diversion, ...)
     science = load_science(f"{rd_dir}/weekly_science.csv")  # C2 (optional)
     with open(f"{rd_dir}/weekly_delivery.csv") as f:
         rows = list(csv.DictReader(f))
@@ -131,12 +146,16 @@ def main(rundate, original="config/original_expected.csv", status_path="config/i
             if week_start(wk) >= eff:
                 c1 = 0 if state == "failed" else reduced
         sci, clim = science.get((rd, wk), (None, None))  # C2: blank where no zarr (gray)
+        ex = excl.get(rd, ())  # metrics to grey out for this instrument
         records.append({
             "refDes": rd, "week": wk,
             "delivered_human": r["delivered_human"],
-            "c1_expected_human": format_size(c1, binary=True), "pct_technical": pct(d, c1),
-            "c3_expected_human": format_size(c3, binary=True), "pct_retention": pct(d, c3),
-            "pct_science": sci, "pct_climatology": clim,  # C2 (gross-range) + decomposition
+            "c1_expected_human": format_size(c1, binary=True),
+            "pct_technical": None if "technical" in ex else pct(d, c1),
+            "c3_expected_human": format_size(c3, binary=True),
+            "pct_retention": None if "retention" in ex else pct(d, c3),
+            "pct_science": None if "science" in ex else sci,
+            "pct_climatology": clim,  # C2 decomposition (diagnostic; not greyed)
         })
 
     records.sort(key=lambda r: (group_key(r["refDes"]), r["refDes"], r["week"]))
@@ -164,8 +183,9 @@ def cli():
     p.add_argument("--original", default="config/original_expected.csv", help="auto baseline from crawl_baseline")
     p.add_argument("--overrides", default="config/baseline_overrides.csv", help="curated baseline corrections")
     p.add_argument("--status", default="config/instrument_status.csv", help="failed/reduced instrument list")
+    p.add_argument("--exclusions", default="config/exclusions.csv", help="per-metric grey-outs")
     a = p.parse_args()
-    main(a.date, a.original, a.status, a.overrides)
+    main(a.date, a.original, a.status, a.overrides, a.exclusions)
 
 
 if __name__ == "__main__":

@@ -23,19 +23,22 @@ leave it (real loss). All items below are resolved unless marked **open**.
 - **failed**: CTDBPN106, OPTAAD106, CAMDSB107, HYDBBA105, PHSENA106, ADCPTE101, HPIESA301.
 - **reduced**: CAMHDA301 (HD camera) → 831.3 GiB/wk.
 
-## Excluded (→ gray, baseline 0)
+## Excluded / greyed
 
-- **Broadband hydrophones (HYDBBA 102/103/105/106/302/303)** — Navy diversion makes the
-  delivery score invalid.
-- Seismometers / low-freq hydrophones (OBS, OBSSP, HYDLF) → deliver to IRIS, not this archive.
-  (HPIES and D1000 ARE tallied here; D1000 via the RASFLA301_D1000 path.)
+Per-metric grey-outs live in `config/exclusions.csv` (`refDes,metrics,reason`).
+- **Broadband hydrophones (HYDBBA 102/103/105/106/302/303)** — `all` metrics; Navy diversion
+  makes the delivery score invalid.
+- **PARAD (101/102/301)** — `science` only; QARTOD gross-range test is mis-set in prod (good
+  data, bad test), so C2 is greyed while C1/C3 stay (they deliver ~100%).
+- Seismometers / low-freq hydrophones (OBS, OBSSP, HYDLF) → deliver to IRIS, not this archive
+  (auto 0 baseline → gray; no config needed). HPIES and D1000 ARE tallied (D1000 via RASFLA301_D1000).
 
 ## C2 (science / QARTOD)
 
 % of present zarr data without a fail flag (4), gross-range only (climatology excluded), per
 week. 59 instruments have QARTOD; overall ~92%.
 
-- **open / QC team:** all three PAR sensors (PARADA101/102/301) read **0%** — gross-range fails
-  100% of points at every site (climatology innocent). A mis-set PAR gross-range bound, not 3
-  sensor failures. Highest priority.
+- **PAR (PARADA101/102/301):** greyed from C2 (config/exclusions.csv) — gross-range fails 100%
+  of points at every site (climatology innocent), i.e. good data / bad test. **open / QC team:**
+  fix the mis-set PAR gross-range bound in prod, then remove the exclusion.
 - Lower readers to glance at: PCO2WA101 (~52%), PHSENA108 (~73%), FLORTD104/301 (~73–77%).

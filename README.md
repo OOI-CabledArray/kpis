@@ -127,8 +127,8 @@ plot_kpi --metric retention --date 2026-06-25
 
 ## Curated inputs (`config/`)
 
-Hand-maintained, layered on the auto baseline; `crawl_baseline` never touches them, so edits
-survive a refresh. Edit and re-run `compute_kpi` — no re-crawl.
+Three hand-maintained files, layered on the auto baseline; `crawl_baseline` never touches them,
+so edits survive a refresh. Edit and re-run `compute_kpi` — no re-crawl.
 
 ### `config/instrument_status.csv` — failed/reduced (C1)
 
@@ -166,6 +166,26 @@ refDes,original_p95_weekly,note
 CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files; set to typical weekly delivery
 ```
 
+### `config/exclusions.csv` — grey out an instrument per metric
+
+Sets a cell to blank (gray) for the listed metric(s) — for cases where a number would be
+*invalid* rather than just low (e.g. a mis-set QARTOD test, or Navy-diverted delivery).
+
+| column | meaning |
+|---|---|
+| `refDes` | instrument reference designator |
+| `metrics` | space-separated `technical retention science`, or `all` |
+| `reason` | why (free text) |
+
+```csv
+refDes,metrics,reason
+RS01SBPS-SF01A-3C-PARADA101,science,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE02SHBP-LJ01D-11-HYDBBA106,all,Navy diversion makes the delivery score invalid
+```
+
+This is the unified way to grey cells: use it instead of zeroing a baseline. (`failed` in
+`instrument_status.csv` is different — it sets C1 expected to 0 but keeps C3 showing the loss.)
+
 ## Automation (GitHub Actions)
 
 - **`weekly-kpi.yml`** — Mondays + on demand. Stateless re-tabulation of the rolling window
@@ -181,6 +201,7 @@ CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files;
 
 - **Seismometers / low-freq hydrophones aren't in this archive.** OBS (OBSBBA, OBSSPA) and HYDLF
   deliver to the IRIS/EarthScope DMC → empty folders → 0 baseline → blank KPI. Broadband
-  hydrophones (HYDBB), HPIES, and D1000 *are* here and tallied.
+  hydrophones (HYDBB), HPIES, and D1000 *are* here and tallied — though HYDBB are currently
+  greyed via `config/exclusions.csv` (Navy diversion).
 - **Non-standard folder names** are mapped in `PATH_OVERRIDES` in `archive_crawler.py` (e.g. the
   D1000 logs under `RASFLA301_D1000`, not `D1000A301`).

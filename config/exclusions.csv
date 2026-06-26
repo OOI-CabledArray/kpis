@@ -1,0 +1,10 @@
+refDes,metrics,reason
+RS01SBPS-SF01A-3C-PARADA101,science,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE04OSPS-SF01B-3C-PARADA102,science,QARTOD gross-range test mis-set in prod (good data, bad test)
+RS03AXPS-SF03A-3C-PARADA301,science,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE02SHBP-LJ01D-11-HYDBBA106,all,Navy diversion makes the delivery score invalid
+CE04OSBP-LJ01C-11-HYDBBA105,all,Navy diversion makes the delivery score invalid
+RS01SBPS-PC01A-08-HYDBBA103,all,Navy diversion makes the delivery score invalid
+RS01SLBS-LJ01A-09-HYDBBA102,all,Navy diversion makes the delivery score invalid
+RS03AXBS-LJ03A-09-HYDBBA302,all,Navy diversion makes the delivery score invalid
+RS03AXPS-PC03A-08-HYDBBA303,all,Navy diversion makes the delivery score invalid
