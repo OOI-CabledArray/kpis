@@ -100,7 +100,8 @@ crawl_science --decompose                           # also emit pct_climatology
 ### `compute_kpi` — join into C1 + C2 + C3
 
 Joins `weekly_delivery.csv` against the baseline (`original_expected.csv` + `baseline_overrides.csv`)
-and `instrument_status.csv`, folding in `weekly_science.csv` if present, → `reports/<date>/`:
+and `instrument_status.csv`, applies `instrument_overrides.csv`, folds in `weekly_science.csv` if
+present → `reports/<date>/`:
 
 - `kpi.csv` — per instrument-week: `delivered_human`, C1 (`c1_expected_human`, `pct_technical`),
   C3 (`c3_expected_human`, `pct_retention`), C2 (`pct_science` [+ `pct_climatology`]).
@@ -111,7 +112,7 @@ and `instrument_status.csv`, folding in `weekly_science.csv` if present, → `re
 ```bash
 compute_kpi                          # uses today's reports/<date>/ + config/ inputs
 compute_kpi --date 2026-06-25
-compute_kpi --status config/instrument_status.csv --overrides config/baseline_overrides.csv
+compute_kpi --instrument-overrides config/instrument_overrides.csv
 ```
 
 ### `plot_kpi` — heatmap
@@ -166,25 +167,38 @@ refDes,original_p95_weekly,note
 CE04OSPS-SF01B-4F-PCO2WA102,33 KiB,auto p95 inflated by 2025 stuck-sensor files; set to typical weekly delivery
 ```
 
-### `config/exclusions.csv` — grey out an instrument per metric
+### `config/instrument_overrides.csv` — per-metric fixed scores or grey-outs
 
-Sets a cell to blank (gray) for the listed metric(s) — for cases where a number would be
-*invalid* rather than just low (e.g. a mis-set QARTOD test, or Navy-diverted delivery).
+Single file for all instrument-level KPI overrides. Each metric column (`pct_technical`,
+`pct_retention`, `pct_science`) can be:
+
+| value | effect |
+|---|---|
+| *(empty)* | compute normally |
+| a number (e.g. `100`) | use that fixed score |
+| `exclude` | grey out (blank cell) |
+
+C1/C3 fixed scores are skipped for failed weeks (fall back to computed). C2 zarr-derived values
+always win over fixed scores when `weekly_science.csv` has an entry for that instrument-week.
 
 | column | meaning |
 |---|---|
 | `refDes` | instrument reference designator |
-| `metrics` | space-separated `technical retention science`, or `all` |
-| `reason` | why (free text) |
+| `pct_technical` | override for C1 |
+| `pct_retention` | override for C3 |
+| `pct_science` | override for C2 |
+| `note` | why (free text) |
 
 ```csv
-refDes,metrics,reason
-RS01SBPS-SF01A-3C-PARADA101,science,QARTOD gross-range test mis-set in prod (good data, bad test)
-CE02SHBP-LJ01D-11-HYDBBA106,all,Navy diversion makes the delivery score invalid
+refDes,pct_technical,pct_retention,pct_science,note
+RS01SBPS-SF01A-3C-PARADA101,,,exclude,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE02SHBP-LJ01D-11-HYDBBA106,100,100,100,Navy diversion makes the delivery score invalid
 ```
 
-This is the unified way to grey cells: use it instead of zeroing a baseline. (`failed` in
-`instrument_status.csv` is different — it sets C1 expected to 0 but keeps C3 showing the loss.)
+Use `exclude` when a computed number would be *misleading* (mis-set QC test, instrument not yet
+deployed). Use a fixed score when the true value is known from an external source (EarthScope
+delivery, HITL QAQC). Prefer this over zeroing a baseline. (`failed` in `instrument_status.csv`
+is different — it sets C1 expected to 0 but keeps C3 showing the loss.)
 
 ## Automation (GitHub Actions)
 
@@ -199,9 +213,10 @@ This is the unified way to grey cells: use it instead of zeroing a baseline. (`f
 
 ## Notes
 
-- **Seismometers / low-freq hydrophones aren't in this archive.** OBS (OBSBBA, OBSSPA) and HYDLF
-  deliver to the IRIS/EarthScope DMC → empty folders → 0 baseline → blank KPI. Broadband
-  hydrophones (HYDBB), HPIES, and D1000 *are* here and tallied — though HYDBB are currently
-  greyed via `config/exclusions.csv` (Navy diversion).
+- **Seismometers / low-freq hydrophones / broadband hydrophones route to EarthScope.** OBS
+  (OBSBBA, OBSSPA), HYDLF, and HYDBB deliver to the IRIS/EarthScope DMC or are subject to Navy
+  diversion — OOI archive delivery is zero or invalid. All three groups are scored at 100% for
+  C1/C3/C2 via `config/instrument_overrides.csv` (EarthScope
+  delivery + HITL QAQC coverage). HPIES and D1000 *are* in the OOI archive and tallied normally.
 - **Non-standard folder names** are mapped in `PATH_OVERRIDES` in `archive_crawler.py` (e.g. the
   D1000 logs under `RASFLA301_D1000`, not `D1000A301`).

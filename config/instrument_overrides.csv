@@ -1,0 +1,28 @@
+refDes,pct_technical,pct_retention,pct_science,note
+RS01SBPS-SF01A-3C-PARADA101,,,exclude,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE04OSPS-SF01B-3C-PARADA102,,,exclude,QARTOD gross-range test mis-set in prod (good data, bad test)
+RS03AXPS-SF03A-3C-PARADA301,,,exclude,QARTOD gross-range test mis-set in prod (good data, bad test)
+CE02SHBP-LJ01D-11-HYDBBA106,100,100,exclude,Navy diversion makes the delivery score invalid
+CE04OSBP-LJ01C-11-HYDBBA105,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SBPS-PC01A-08-HYDBBA103,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SLBS-LJ01A-09-HYDBBA102,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03AXBS-LJ03A-09-HYDBBA302,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03AXPS-PC03A-08-HYDBBA303,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SLBS-MJ01A-05-HYDLFA101,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SUM1-LJ01B-05-HYDLFA104,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03AXBS-MJ03A-05-HYDLFA301,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03CCAL-MJ03F-06-HYDLFA305,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ECAL-MJ03E-09-HYDLFA304,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SLBS-MJ01A-05-OBSBBA102,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SUM1-LJ01B-05-OBSBBA101,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SUM1-LJ01B-06-OBSSPA103,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SUM1-LJ01B-07-OBSSPA102,100,100,exclude,Navy diversion makes the delivery score invalid
+RS01SUM1-LJ01B-08-OBSSPA101,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ASHS-MJ03B-05-OBSSPA302,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ASHS-MJ03B-06-OBSSPA301,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03AXBS-MJ03A-05-OBSBBA303,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03CCAL-MJ03F-06-OBSBBA301,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ECAL-MJ03E-05-OBSSPA303,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ECAL-MJ03E-08-OBSSPA304,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03ECAL-MJ03E-09-OBSBBA302,100,100,exclude,Navy diversion makes the delivery score invalid
+RS03INT2-MJ03D-05-OBSSPA305,100,100,exclude,Navy diversion makes the delivery score invalid
