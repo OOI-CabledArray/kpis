@@ -6,30 +6,18 @@ KPIs are reported **per instrument per week** (Mon–Sun, labeled by the followi
 refDes in [`sitesDictionary.csv`](https://github.com/OOI-CabledArray/rca-data-tools/tree/main/rca_data_tools/qaqc/params).
 Three NSF metrics:
 
-- **C1 Technical** (`pct_technical`) — delivered ÷ expected from raw-archive file sizes.
-  Expected = full intended weekly capacity, shrunk for **failed** (→ 0) / **reduced** instruments
-  after their effective date. "Did the data we currently expect arrive?"
+- **C1 Technical** (`pct_technical`) — delivered ÷ expected from raw-archive file sizes. After an
+  instrument fails or its sampling regimen changes, the baseline expectation is adjusted for that
+  instrument's denominator. Instruments subject to Navy diversion are recorded as 100% if there
+  are no active missing-data reports in Nereus.
 - **C3 Retention** (`pct_retention`) — same numerator ÷ the *full* original capacity (never
-  shrunk). "What fraction of the original instrument complement is still delivering?" Failed or
-  down-sampled instruments read low.
-- **C2 Science** (`pct_science`) — % of present zarr data without a QARTOD fail flag (4),
-  gross-range only (climatology excluded), averaged across parameters. Derived from QC'd zarr,
-  not the raw archive. No zarr → gray.
-
-Healthy instruments get C1 == C3; they diverge only for failed/reduced instruments. C2 is
-independent — a quality measure of the data that did arrive.
-
-## Scoring assumptions
-
-- **Failed/reduced instruments** — after the effective date, C1 expected is set to 0 (failed) or
-  a reduced weekly volume. C3 always uses the full original baseline so the loss is visible in
-  retention.
-- **Navy-diverted instruments** (HYDBBA, HYDLFA, OBS/OBSSP) — data routes to the IRIS/EarthScope
-  DMC, not the OOI archive. Archive delivery is zero by design. C1 and C3 are scored 100%; C2 is
-  greyed. See `config/instrument_overrides.csv`.
-- **QARTOD unavailable** — instruments without a zarr (cameras, BOTPT, some others) are greyed in
-  C2. PARADA sensors are also greyed in C2 because the gross-range test is mis-configured in
-  production (good data, bad test).
+  adjusted). Instruments subject to Navy diversion are recorded as 100% if there are no active
+  missing-data reports in Nereus. Failed or down-sampled instruments read low, reflecting the true
+  loss against original capacity.
+- **C2 Science** (`pct_science`) — % of present zarr data without a QARTOD fail flag, gross-range
+  only (climatology excluded), averaged across parameters. Instruments without automated QARTOD
+  (cameras, BOTPT, seismic, hydrophones) are excluded from this metric. Derived from QC'd zarr,
+  not the raw archive.
 
 ## Quick start
 
