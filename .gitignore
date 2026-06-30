@@ -131,3 +131,5 @@ cython_debug/
 # Inputs in config/ (original_expected.csv, baseline_overrides.csv, instrument_status.csv) are tracked.
 
 .claude/settings.local.json
+
+.DS_Store
