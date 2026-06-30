@@ -105,7 +105,7 @@ def _decompose(ds, start, end):
     weekly = {}
     for i, w in enumerate(res.week.values):
         clim = round(float(res["clim"].values[i]), 1) if "clim" in res else None
-        weekly[str(w)[:10]] = (round(float(res["science"].values[i]), 1), clim)
+        weekly[str(w + np.timedelta64(7, "D"))[:10]] = (round(float(res["science"].values[i]), 1), clim)
     return weekly
 
 

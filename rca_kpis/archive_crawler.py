@@ -132,13 +132,17 @@ def _iso(yyyymmdd):
 
 
 def week_of(yyyymmdd):
-    """Week-start (Monday) date YYYY-MM-DD for the Mon-Sun week containing a day."""
+    """Following-Monday date YYYY-MM-DD for the Mon-Sun week containing a day.
+
+    Weeks are labeled by the Monday *after* they end (e.g. Mon Jun 22–Sun Jun 28 → Jun 29),
+    matching the NSF reporting convention where the date tag is the Monday following the week.
+    """
     d = date.fromisoformat(_iso(yyyymmdd))
-    return (d - timedelta(days=d.weekday())).isoformat()
+    return (d - timedelta(days=d.weekday()) + timedelta(days=7)).isoformat()
 
 
 def full_weeks(start, end):
-    """Week-start (Monday) dates YYYY-MM-DD for each Mon-Sun week fully inside [start, end].
+    """Following-Monday labels YYYY-MM-DD for each Mon-Sun week fully inside [start, end].
 
     Partial edge weeks are excluded -- KPIs report only complete weeks.
     """
@@ -146,7 +150,7 @@ def full_weeks(start, end):
     mon = s + timedelta(days=(7 - s.weekday()) % 7)  # first Monday on/after start
     out = []
     while mon + timedelta(days=6) <= e:
-        out.append(mon.isoformat())
+        out.append((mon + timedelta(days=7)).isoformat())
         mon += timedelta(days=7)
     return out
 
