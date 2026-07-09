@@ -27,10 +27,10 @@ def crawl_archive_task(rundate, start):
 
 
 @task(name="crawl-science", timeout_seconds=5400)  # 90 min ceiling for large zarr runs
-def crawl_science_task(rundate, start):
+def crawl_science_task(rundate, start, workers=None):
     logger = get_run_logger()
-    logger.info(f"crawl_science: {start} -> {rundate}")
-    _crawl_science(start=start, end=rundate, rundate=rundate)
+    logger.info(f"crawl_science: {start} -> {rundate} (workers={workers or 'auto'})")
+    _crawl_science(start=start, end=rundate, rundate=rundate, workers=workers)
 
 
 @task(name="compute-kpi")
@@ -68,24 +68,20 @@ def git_commit_push_task(rundate):
     logger.info(f"pushed reports/{rundate}/")
 
 
-@flow(name="rca-kpis", timeout_seconds=7200)
-def kpi_pipeline(weeks_back: int = 13):
+@flow(name="rca-kpis", timeout_seconds=10800)
+def kpi_pipeline(science_workers: int = None):
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
 
-    # C1/C3 and C2 crawl in parallel — independent data sources
-    delivery = crawl_archive_task.submit(rundate=rundate, start=start)
-    science = crawl_science_task.submit(rundate=rundate, start=start)
-
-    kpi = compute_kpi_task.submit(rundate=rundate, wait_for=[delivery, science])
-
-    plots = [
-        plot_kpi_task.submit(metric=m, rundate=rundate, wait_for=[kpi])
-        for m in ("technical", "retention", "science")
-    ]
-
-    git_commit_push_task(rundate=rundate, wait_for=plots)
+    # Sequential on purpose: 30 GB is the Fargate ceiling at 4 vCPU, and the
+    # science crawl's zarr opens OOM the container if they overlap the archive crawl.
+    crawl_archive_task(rundate=rundate, start=start)
+    crawl_science_task(rundate=rundate, start=start, workers=science_workers)
+    compute_kpi_task(rundate=rundate)
+    for m in ("technical", "retention", "science"):
+        plot_kpi_task(metric=m, rundate=rundate)
+    git_commit_push_task(rundate=rundate)
 
 
 if __name__ == "__main__":

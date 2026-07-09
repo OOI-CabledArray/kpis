@@ -129,13 +129,16 @@ def science_instrument(item, start, end, decompose=False):
         return ref_des, {}
 
 
-def main(start=None, end=None, rundate=None, decompose=False):
+def main(start=None, end=None, rundate=None, decompose=False, workers=None):
+    if workers is None:
+        # RAM scales with concurrent zarr opens; S3 throughput saturates around 8
+        workers = min(os.cpu_count() or 4, 8)
     files = zarr_files()
     logger.info(f"C2: scanning QARTOD in {len(files)} zarr datasets over {start}..{end}"
                 f"{' (decompose)' if decompose else ''}")
     fn = partial(science_instrument, start=start, end=end, decompose=decompose)
     t0 = time.perf_counter()
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(fn, files.items()))
     n = sum(bool(w) for _, w in results)
     logger.info(f"scanned {len(files)} zarr in {time.perf_counter() - t0:.0f}s ({n} with QARTOD)")
@@ -161,8 +164,10 @@ def cli():
     p.add_argument("--date", default=str(today), help="run date tag (matches crawl_archive --date)")
     p.add_argument("--decompose", action="store_true",
                    help="also emit pct_climatology (slower: parses qartod_executed per-test)")
+    p.add_argument("--workers", type=int, default=None,
+                   help="concurrent zarr opens (default: min(cpu_count, 8); lower = less RAM)")
     a = p.parse_args()
-    main(start=a.start, end=a.end, rundate=a.date, decompose=a.decompose)
+    main(start=a.start, end=a.end, rundate=a.date, decompose=a.decompose, workers=a.workers)
 
 
 if __name__ == "__main__":
