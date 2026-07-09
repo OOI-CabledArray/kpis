@@ -10,6 +10,7 @@ Prefect variable or ECS secret in the work pool configuration.
 import os
 import subprocess
 from datetime import date
+from typing import Optional
 
 from prefect import flow, task, get_run_logger
 
@@ -69,13 +70,11 @@ def git_commit_push_task(rundate):
 
 
 @flow(name="rca-kpis", timeout_seconds=10800)
-def kpi_pipeline(science_workers: int = None):
+def kpi_pipeline(science_workers: Optional[int] = None):
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
 
-    # Sequential on purpose: 30 GB is the Fargate ceiling at 4 vCPU, and the
-    # science crawl's zarr opens OOM the container if they overlap the archive crawl.
     crawl_archive_task(rundate=rundate, start=start)
     crawl_science_task(rundate=rundate, start=start, workers=science_workers)
     compute_kpi_task(rundate=rundate)
