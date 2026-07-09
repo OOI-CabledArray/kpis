@@ -75,6 +75,8 @@ def kpi_pipeline(science_workers: Optional[int] = None):
     rundate = str(today)
     start = str(months_back(today, 3))
 
+    # crawls stay sequential: overlapping them OOM'd 30 GB, and the science
+    # crawl alone needs most of the 60 GB task at full worker count
     crawl_archive_task(rundate=rundate, start=start)
     crawl_science_task(rundate=rundate, start=start, workers=science_workers)
     compute_kpi_task(rundate=rundate)
