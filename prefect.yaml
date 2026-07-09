@@ -1,0 +1,26 @@
+name: kpis
+prefect-version: 2.14.15
+
+build:
+
+push:
+
+pull:
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/OOI-CabledArray/kpis.git
+    branch: main
+
+deployments:
+- name: kpi-pipeline-4vcpu-30gb
+  entrypoint: rca_kpis/flow.py:kpi_pipeline
+  parameters: {}
+  work_pool:
+    name: scope-push-pool
+    work_queue_name:
+    job_variables:
+      cpu: 4096
+      memory: 30720
+  schedule:
+    cron: "0 12 * * 1"   # Mondays 12:00 UTC
+    timezone: UTC
+  is_schedule_active: true

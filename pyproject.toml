@@ -25,6 +25,7 @@ dependencies = [
     "numpy",
     "pandas",
     "requests",
+    "prefect>=2.14",
     "s3fs",
     "xarray",
     "zarr",
