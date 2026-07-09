@@ -20,6 +20,7 @@ deployments:
     job_variables:
       cpu: 4096
       memory: 30720
+      image: public.ecr.aws/p0l4c7i2/rca-kpis:latest
   schedule:
     cron: "0 12 * * 1"   # Mondays 12:00 UTC
     timezone: UTC
