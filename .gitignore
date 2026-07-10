@@ -133,3 +133,4 @@ cython_debug/
 .claude/settings.local.json
 
 .DS_Store
+.vscode

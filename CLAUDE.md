@@ -23,10 +23,10 @@ plot_kpi --metric retention
 plot_kpi --metric science
 ```
 
-`crawl_science` (C2) opens dozens of multi-GB zarr from S3 (~45 min, lots of RAM) — run it
-**locally / out-of-band**, NOT on a hosted GitHub runner (it would OOM). It's excluded from
-the weekly workflow; `compute_kpi` folds C2 in if `reports/<date>/weekly_science.csv` exists,
-else `pct_science` is blank. `--decompose` adds the (slower) per-test climatology column.
+`crawl_science` (C2) opens dozens of multi-GB zarr from S3 (~45 min, lots of RAM) — the weekly
+Prefect deployment (`prefect.yaml`, 16 vCPU/96 GB Fargate) runs it; for local runs, `--workers`
+throttles RAM. `compute_kpi` folds C2 in if `reports/<date>/weekly_science.csv` exists, else
+`pct_science` is blank. `--decompose` adds the (slower) per-test climatology column.
 
 `crawl_baseline` (rebuilds `original_expected.csv`) is also **not** part of the routine
 pipeline — slow and shifts the C1/C3 denominator. Run it only when explicitly asked.

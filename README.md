@@ -186,15 +186,18 @@ deployed). Use a fixed score when the true value is known from an external sourc
 delivery, HITL QAQC). Prefer this over zeroing the baseline. (`failed` in `instrument_status.csv`
 is different — it sets C1 expected to 0 while C3 continues to show the loss.)
 
-## Automation (GitHub Actions)
+## Automation
 
-- **`weekly-kpi.yml`** — Mondays + on demand. Runs `crawl_archive` → `compute_kpi` →
-  `plot_kpi` (C1/C3 only), then commits `reports/<date>/`. Re-tabulating each week heals
-  previously incomplete weeks as late/backfilled data arrives. **C2 is excluded** — run
-  `crawl_science` out-of-band, commit the resulting `weekly_science.csv`, and `compute_kpi`
-  will fold it in on the next run.
-- **`refresh-baseline.yml`** — manual only. Regenerates `config/original_expected.csv`.
-  Curated overrides are untouched. Slow and shifts the C1/C3 denominator — review the diff.
+- **Prefect deployment** (`prefect.yaml`, flow in `rca_kpis/flow.py`) — Mondays 12:00 UTC on
+  ECS Fargate (16 vCPU / 96 GB; the C2 zarr scan is memory-heavy). Runs all three metrics:
+  `crawl_archive` → `crawl_science` → `compute_kpi` → `plot_kpi` ×3, then commits
+  `reports/<date>/` to `main` (needs a `GIT_TOKEN` env var in the work pool). Re-tabulating
+  each week heals previously incomplete weeks as late/backfilled data arrives. Crawler
+  warnings (missing QARTOD, broken zarr, missing archive folder) are forwarded to the
+  Prefect UI logs.
+- **`refresh-baseline.yml`** (GitHub Actions) — manual only. Regenerates
+  `config/original_expected.csv`. Curated overrides are untouched. Slow and shifts the
+  C1/C3 denominator — review the diff.
 
 ## Notes
 

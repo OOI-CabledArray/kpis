@@ -64,7 +64,10 @@ def _weekly(boolean):
 
 def _fast(ds, start, end):
     """pct_science from the numeric aggregate: agg != 4 == gross-range pass (no strings)."""
-    qr = [v for v in ds.data_vars if v.endswith("_qartod_results")]
+    # numeric only: some regenerated stores (OPTAA) expose string-typed results
+    # whose comparison would materialize the full array (100s of GiB)
+    qr = [v for v in ds.data_vars
+          if v.endswith("_qartod_results") and ds[v].dtype.kind in "iuf"]
     if not qr:
         return None
     sub = _add_week(ds[qr].sel(time=slice(start, end)))
@@ -72,7 +75,9 @@ def _fast(ds, start, end):
         return {}
     parts = [_weekly(sub[v] != FAIL) for v in qr]
     c2 = (xr.concat(parts, "param").mean("param") * 100).compute()
-    return {str(w)[:10]: (round(float(v), 1), None) for w, v in zip(c2.week.values, c2.values)}
+    # groupby keys are the week's own Monday; +7d converts to the following-Monday
+    return {str(w + np.timedelta64(7, "D"))[:10]: (round(float(v), 1), None)
+            for w, v in zip(c2.week.values, c2.values)}
 
 
 def _decompose(ds, start, end):
