@@ -97,13 +97,15 @@ def git_commit_push_task(rundate):
 
 
 @flow(name="rca-kpis", timeout_seconds=10800)
-def kpi_pipeline(science_workers: int = 4):
+def kpi_pipeline(science_workers: int = 2):
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
 
     # crawls stay sequential: the science crawl needs the memory to itself.
-    # science_workers=4 (down from 8)
+    # science_workers=2 on the 8 vCPU / 60 GB task -> ~30 GB per worker, enough
+    # headroom for the heavy dense-sampled ADCP/OPTAA reductions (~15+ GB each).
+    # Weekly batch job: reliability over speed, so few workers + big per-worker RAM.
     crawl_archive_task(rundate=rundate, start=start)
     crawl_science_task(rundate=rundate, start=start, workers=science_workers)
     compute_kpi_task(rundate=rundate)
