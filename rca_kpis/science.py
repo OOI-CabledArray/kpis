@@ -37,6 +37,14 @@ FAIL = 4              # QARTOD fail flag (numeric, in _qartod_results)
 FAIL_CHAR = "4"       # same, as a character in the _qartod_executed string
 CLIMATOLOGY = "climatology_test"
 
+# TODO stores mid-regeneration in the OOI archive that break the crawl.
+REGENERATING = [
+    "CE04OSPS-SF01B-3B-OPTAAD105",
+    "RS01SLBS-LJ01A-11-OPTAAC103",
+    "CE04OSBP-LJ01C-08-OPTAAC104",
+    "CE02SHBP-LJ01D-08-OPTAAD106",
+    "CE04OSBP-LJ01C-07-VEL3DC107",
+]
 
 def zarr_files():
     """{refDes: zarrFile} for instruments that have a zarr in sitesDictionary."""
@@ -121,6 +129,11 @@ def science_instrument(item, start, end, decompose=False):
     try:
         fs = s3fs.S3FileSystem(anon=True)
         ds = xr.open_zarr(fs.get_mapper(BUCKET + zarr_file), consolidated=True)
+        # log before the heavy reduce with a size signal -- if the OS SIGKILLs the
+        # process (OOM), the trailing "reducing" lines with no matching completion
+        # are the in-flight suspects, and the cell count flags the memory hog
+        biggest = max((ds[v].size for v in ds.data_vars if v.endswith("_qartod_results")), default=0)
+        logger.info(f"{ref_des}: reducing ({biggest:,} cells in largest QARTOD var)")
         weekly = _decompose(ds, start, end) if decompose else _fast(ds, start, end)
         if weekly is None:
             logger.warning(f"{ref_des}: no QARTOD vars")
@@ -136,6 +149,9 @@ def science_instrument(item, start, end, decompose=False):
 
 def main(start=None, end=None, rundate=None, decompose=False, workers=8):
     files = zarr_files()
+    for rd in [r for r in REGENERATING if r in files]:
+        logger.warning(f"{rd}: skipped (store mid-regeneration, see REGENERATING)")
+        del files[rd]
     logger.info(f"C2: scanning QARTOD in {len(files)} zarr datasets over {start}..{end}"
                 f"{' (decompose)' if decompose else ''}")
     fn = partial(science_instrument, start=start, end=end, decompose=decompose)

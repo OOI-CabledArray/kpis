@@ -97,13 +97,13 @@ def git_commit_push_task(rundate):
 
 
 @flow(name="rca-kpis", timeout_seconds=10800)
-def kpi_pipeline(science_workers: int = 8):
+def kpi_pipeline(science_workers: int = 4):
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
 
-    # crawls stay sequential: the science crawl needs the memory to itself
-    # (8 workers OOM'd a 60 GB task even without overlap)
+    # crawls stay sequential: the science crawl needs the memory to itself.
+    # science_workers=4 (down from 8)
     crawl_archive_task(rundate=rundate, start=start)
     crawl_science_task(rundate=rundate, start=start, workers=science_workers)
     compute_kpi_task(rundate=rundate)
