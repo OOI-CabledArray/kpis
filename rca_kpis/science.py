@@ -20,6 +20,8 @@ Writes reports/<date>/weekly_science.csv.
 import argparse
 import csv
 import os
+import resource
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
@@ -116,25 +118,32 @@ def _decompose(ds, start, end):
     return weekly
 
 
+def _peak_gib():
+    """Process peak RSS in GiB (ru_maxrss is bytes on macOS, KiB on Linux)."""
+    kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return kb / 2**30 if sys.platform == "darwin" else kb / 2**20
+
+
 def science_instrument(item, start, end, decompose=False):
     """Per-ISO-week (pct_science, pct_climatology|None) for one instrument."""
     ref_des, zarr_file = item
     t0 = time.perf_counter()
+    logger.info(f"{ref_des}: start")
     try:
         fs = s3fs.S3FileSystem(anon=True)
         ds = xr.open_zarr(fs.get_mapper(BUCKET + zarr_file), consolidated=True)
-        # log before the heavy reduce with a size signal -- if the OS SIGKILLs the
-        # process (OOM), the trailing "reducing" lines with no matching completion
-        # are the in-flight suspects, and the cell count flags the memory hog
-        biggest = max((ds[v].size for v in ds.data_vars if v.endswith("_qartod_results")), default=0)
-        logger.info(f"{ref_des}: reducing ({biggest:,} cells in largest QARTOD var)")
         weekly = _decompose(ds, start, end) if decompose else _fast(ds, start, end)
+        # ALWAYS log an end line (incl. 0 wks) so a start with no end == a real
+        # hang -- an empty window returning {} must not masquerade as in-flight.
+        # peak RSS reveals whether an OOM is one spike or a cumulative climb.
+        dt, peak = time.perf_counter() - t0, _peak_gib()
         if weekly is None:
-            logger.warning(f"{ref_des}: no QARTOD vars")
-            return ref_des, {}
-        if weekly:
+            logger.warning(f"{ref_des}: no QARTOD vars [{dt:.0f}s, peak {peak:.1f} GiB]")
+        elif weekly:
             mean_sci = np.mean([s for s, _ in weekly.values()])
-            logger.info(f"{ref_des}: {len(weekly)} wks, sci~{mean_sci:.0f}% [{time.perf_counter() - t0:.0f}s]")
+            logger.info(f"{ref_des}: {len(weekly)} wks, sci~{mean_sci:.0f}% [{dt:.0f}s, peak {peak:.1f} GiB]")
+        else:
+            logger.info(f"{ref_des}: 0 wks (no data in window) [{dt:.0f}s, peak {peak:.1f} GiB]")
         return ref_des, weekly
     except Exception as e:  # missing/odd zarr -> no C2 (gray), don't kill the run
         logger.warning(f"{ref_des}: C2 failed ({type(e).__name__}: {e})")
