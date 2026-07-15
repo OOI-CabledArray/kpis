@@ -51,12 +51,12 @@ def crawl_archive_task(rundate, start):
         _crawl_archive(start=start, end=rundate, rundate=rundate)
 
 
-@task(name="crawl-science", timeout_seconds=5400)  # 90 min ceiling for large zarr runs
-def crawl_science_task(rundate, start, workers=8):
+@task(name="crawl-science", timeout_seconds=9000)  # 2.5 h ceiling: serial over large zarr
+def crawl_science_task(rundate, start):
     logger = get_run_logger()
-    logger.info(f"crawl_science: {start} -> {rundate} (workers={workers})")
+    logger.info(f"crawl_science: {start} -> {rundate}")
     with loguru_to_prefect():
-        _crawl_science(start=start, end=rundate, rundate=rundate, workers=workers)
+        _crawl_science(start=start, end=rundate, rundate=rundate)
 
 
 @task(name="compute-kpi")
@@ -97,17 +97,16 @@ def git_commit_push_task(rundate):
 
 
 @flow(name="rca-kpis", timeout_seconds=10800)
-def kpi_pipeline(science_workers: int = 2):
+def kpi_pipeline():
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
 
-    # crawls stay sequential: the science crawl needs the memory to itself.
-    # science_workers=2 on the 8 vCPU / 60 GB task -> ~30 GB per worker, enough
-    # headroom for the heavy dense-sampled ADCP/OPTAA reductions (~15+ GB each).
-    # Weekly batch job: reliability over speed, so few workers + big per-worker RAM.
+    # C2 crawls instruments serially (no threading): the heavy reductions each
+    # need most of the 60 GB task, so concurrency OOMs. Reliable over fast --
+    # fine for a weekly batch job. Whole pipeline is sequential.
     crawl_archive_task(rundate=rundate, start=start)
-    crawl_science_task(rundate=rundate, start=start, workers=science_workers)
+    crawl_science_task(rundate=rundate, start=start)
     compute_kpi_task(rundate=rundate)
     for m in ("technical", "retention", "science"):
         plot_kpi_task(metric=m, rundate=rundate)

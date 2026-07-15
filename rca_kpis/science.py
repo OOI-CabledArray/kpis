@@ -23,9 +23,7 @@ import os
 import resource
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date
-from functools import partial
 
 import numpy as np
 import s3fs
@@ -150,7 +148,7 @@ def science_instrument(item, start, end, decompose=False):
         return ref_des, {}
 
 
-def main(start=None, end=None, rundate=None, decompose=False, workers=8):
+def main(start=None, end=None, rundate=None, decompose=False):
     files = zarr_files()
     skip = [rd for rd in files if any(s in rd for s in REGENERATING)]
     for rd in skip:
@@ -158,10 +156,11 @@ def main(start=None, end=None, rundate=None, decompose=False, workers=8):
         del files[rd]
     logger.info(f"C2: scanning QARTOD in {len(files)} zarr datasets over {start}..{end}"
                 f"{' (decompose)' if decompose else ''}")
-    fn = partial(science_instrument, start=start, end=end, decompose=decompose)
+    # serial on purpose: the heavy instruments' reductions each need most of the
+    # box's RAM, so any concurrency OOMs (see peak-RSS in the per-instrument log).
+    # One at a time is slower but reliable -- fine for a weekly batch job.
     t0 = time.perf_counter()
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(fn, files.items()))
+    results = [science_instrument(item, start, end, decompose) for item in files.items()]
     n = sum(bool(w) for _, w in results)
     logger.info(f"scanned {len(files)} zarr in {time.perf_counter() - t0:.0f}s ({n} with QARTOD)")
 
@@ -186,10 +185,8 @@ def cli():
     p.add_argument("--date", default=str(today), help="run date tag (matches crawl_archive --date)")
     p.add_argument("--decompose", action="store_true",
                    help="also emit pct_climatology (slower: parses qartod_executed per-test)")
-    p.add_argument("--workers", type=int, default=8,
-                   help="concurrent zarr opens (lower = less RAM; each worker peaks several GiB)")
     a = p.parse_args()
-    main(start=a.start, end=a.end, rundate=a.date, decompose=a.decompose, workers=a.workers)
+    main(start=a.start, end=a.end, rundate=a.date, decompose=a.decompose)
 
 
 
