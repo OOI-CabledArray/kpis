@@ -37,14 +37,8 @@ FAIL = 4              # QARTOD fail flag (numeric, in _qartod_results)
 FAIL_CHAR = "4"       # same, as a character in the _qartod_executed string
 CLIMATOLOGY = "climatology_test"
 
-# TODO stores mid-regeneration in the OOI archive that break the crawl.
-REGENERATING = [
-    "CE04OSPS-SF01B-3B-OPTAAD105",
-    "RS01SLBS-LJ01A-11-OPTAAC103",
-    "CE04OSBP-LJ01C-08-OPTAAC104",
-    "CE02SHBP-LJ01D-08-OPTAAD106",
-    "CE04OSBP-LJ01C-07-VEL3DC107",
-]
+# TEMPORARY: substrings of refDes to skip -- stores mid-regeneration RCA s3 bucket
+REGENERATING = ["OPTAA", "VEL3DC107"]
 
 def zarr_files():
     """{refDes: zarrFile} for instruments that have a zarr in sitesDictionary."""
@@ -149,7 +143,8 @@ def science_instrument(item, start, end, decompose=False):
 
 def main(start=None, end=None, rundate=None, decompose=False, workers=8):
     files = zarr_files()
-    for rd in [r for r in REGENERATING if r in files]:
+    skip = [rd for rd in files if any(s in rd for s in REGENERATING)]
+    for rd in skip:
         logger.warning(f"{rd}: skipped (store mid-regeneration, see REGENERATING)")
         del files[rd]
     logger.info(f"C2: scanning QARTOD in {len(files)} zarr datasets over {start}..{end}"
