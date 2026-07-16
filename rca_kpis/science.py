@@ -149,6 +149,15 @@ def science_instrument(item, start, end, decompose=False):
 
 
 def main(start=None, end=None, rundate=None, decompose=False):
+    # flox makes xarray's groupby chunk-aware; without it the reduce materializes
+    # the full window and OOMs on heavy stores. It's used automatically if present,
+    # so log its presence explicitly -- a missing flox is the #1 cause of C2 OOMs.
+    try:
+        import flox
+        logger.info(f"flox {flox.__version__} present -- chunked groupby active")
+    except ImportError:
+        logger.error("flox NOT installed -- groupby will materialize full windows and likely OOM")
+
     files = zarr_files()
     skip = [rd for rd in files if any(s in rd for s in REGENERATING)]
     for rd in skip:

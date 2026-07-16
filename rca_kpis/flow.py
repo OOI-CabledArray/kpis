@@ -12,6 +12,7 @@ import os
 import subprocess
 from contextlib import contextmanager
 from datetime import date
+from importlib.metadata import distributions
 
 from loguru import logger as loguru_logger
 from prefect import flow, task, get_run_logger
@@ -98,6 +99,13 @@ def git_commit_push_task(rundate):
 
 @flow(name="rca-kpis", timeout_seconds=10800)
 def kpi_pipeline():
+    logger = get_run_logger()
+    # log the container's actual package versions -- confirms flox et al. made it
+    # into the running image (a missing flox is the #1 cause of C2 OOMs)
+    installed = {d.metadata["Name"]: d.version for d in distributions()}
+    logger.info(f"Installed packages: {installed}")
+    logger.info(f"flox present: {'flox' in installed} | cpu cores: {os.cpu_count()}")
+
     today = date.today()
     rundate = str(today)
     start = str(months_back(today, 3))
