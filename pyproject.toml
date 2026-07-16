@@ -19,6 +19,9 @@ requires-python = ">=3.10"
 dependencies = [
     "bs4",
     "dask",
+    "flox",  # chunked groupby-reduce for C2 -- without it, xarray's groupby
+             # materializes the full window and OOMs on heavy stores (VEL3DC108,
+             # SPKIR, big ADCPs). With it, the worst store peaks ~21 GB not >60.
     "humanfriendly",
     "loguru",
     "matplotlib",
