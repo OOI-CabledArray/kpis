@@ -149,12 +149,15 @@ def science_instrument(item, start, end, decompose=False):
 
 
 def main(start=None, end=None, rundate=None, decompose=False):
-    # flox makes xarray's groupby chunk-aware; without it the reduce materializes
-    # the full window and OOMs on heavy stores. It's used automatically if present,
-    # so log its presence explicitly -- a missing flox is the #1 cause of C2 OOMs.
+    # With flox, xarray reduces the groupby chunk-by-chunk (low memory). Without
+    # it, xarray loads the whole windowed array first, which OOMs on the big
+    # stores. xarray only uses flox if use_flox is on AND flox is importable; the
+    # default has changed across xarray versions, so set it explicitly here --
+    # relying on the default is how we ended up with flox installed but unused.
     try:
         import flox
-        logger.info(f"flox {flox.__version__} present -- chunked groupby active")
+        xr.set_options(use_flox=True)
+        logger.info(f"flox {flox.__version__} present, use_flox forced on")
     except ImportError:
         logger.error("flox NOT installed -- groupby will materialize full windows and likely OOM")
 
