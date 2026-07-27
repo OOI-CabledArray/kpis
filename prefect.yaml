@@ -11,15 +11,17 @@ pull:
     branch: main
 
 deployments:
-- name: kpi-pipeline-8vcpu-60gb
+- name: kpi-pipeline-16vcpu-120gb
   entrypoint: rca_kpis/flow.py:kpi_pipeline
   parameters: {}
   work_pool:
     name: scope-push-pool
     work_queue_name:
     job_variables:
-      cpu: 8192
-      memory: 61440   # serial + flox peaks ~22 GB; 60 GB is ample once flox is active
+      cpu: 16384
+      # Fargate max RAM. C2 is memory-bound, not CPU-bound the heavy 2D stores hit ~28 GB and the heap doesn't shrink between
+      # instruments, so 60 GB OOM'd on VEL3DC108. Monthly cadence -> ~$2/run.
+      memory: 122880
       image: public.ecr.aws/p0l4c7i2/rca-kpis:latest
   schedule:
     # first Monday of the month, 12:00 UTC. day_or:false ANDs day-of-month with
