@@ -1,10 +1,8 @@
-"""Prefect flow: weekly RCA KPI pipeline (C1 + C2 + C3).
+"""Prefect flow: monthly RCA KPI pipeline (C1 + C2 + C3).
 
-C1/C3 archive crawl and C2 science crawl run in parallel; compute_kpi
-and plots follow sequentially. Results are committed back to the repo.
+Every step runs sequentially. Results are committed back to the repo.
 
-Requires a GIT_TOKEN env var (GitHub PAT with repo write) — set it as a
-Prefect variable or ECS secret in the work pool configuration.
+Requires a GH_PAT env var (GitHub PAT with repo write).
 """
 
 import logging
@@ -75,7 +73,7 @@ def plot_kpi_task(metric, rundate):
 @task(name="git-commit-push")
 def git_commit_push_task(rundate):
     logger = get_run_logger()
-    token = os.environ["GIT_TOKEN"]
+    token = os.environ["GH_PAT"]
     remote = "https://x-access-token:{}@github.com/OOI-CabledArray/kpis.git".format(token)
 
     def run(cmd):
