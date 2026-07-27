@@ -1,0 +1,164 @@
+2026-07-24 11:52:27.776 | INFO     | rca_kpis.science:main:167 - flox 0.11.2 present, use_flox forced on
+2026-07-24 11:52:28.034 | WARNING  | rca_kpis.science:main:174 - RS03AXPS-SF03A-3B-OPTAAD301: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - CE04OSPS-SF01B-3B-OPTAAD105: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - RS01SBPS-SF01A-3B-OPTAAD101: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - RS01SLBS-LJ01A-11-OPTAAC103: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - CE04OSBP-LJ01C-08-OPTAAC104: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - RS03AXBS-LJ03A-11-OPTAAC303: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | WARNING  | rca_kpis.science:main:174 - CE02SHBP-LJ01D-08-OPTAAD106: skipped (store mid-regeneration, see REGENERATING)
+2026-07-24 11:52:28.035 | INFO     | rca_kpis.science:main:176 - C2: scanning QARTOD in 74 zarr datasets over 2026-04-01..2026-07-20
+2026-07-24 11:52:28.035 | INFO     | rca_kpis.science:science_instrument:136 - CE02SHBP-LJ01D-06-CTDBPN106: start
+2026-07-24 11:53:27.135 | INFO     | rca_kpis.science:science_instrument:151 - CE02SHBP-LJ01D-06-CTDBPN106: 0 wks (no data in window) [59s, peak 10.3 GiB]
+2026-07-24 11:53:27.150 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSBP-LJ01C-06-CTDBPO108: start
+2026-07-24 11:54:50.817 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSBP-LJ01C-06-CTDBPO108: 17 wks, sci~100% [84s, peak 12.0 GiB]
+2026-07-24 11:54:50.838 | INFO     | rca_kpis.science:science_instrument:136 - RS01SLBS-LJ01A-12-CTDPFB101: start
+2026-07-24 11:55:54.035 | INFO     | rca_kpis.science:science_instrument:149 - RS01SLBS-LJ01A-12-CTDPFB101: 17 wks, sci~100% [63s, peak 14.4 GiB]
+2026-07-24 11:55:54.056 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXBS-LJ03A-12-CTDPFB301: start
+2026-07-24 11:57:06.348 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXBS-LJ03A-12-CTDPFB301: 17 wks, sci~100% [72s, peak 14.4 GiB]
+2026-07-24 11:57:06.387 | INFO     | rca_kpis.science:science_instrument:136 - RS03ASHS-MJ03B-10-CTDPFB304: start
+2026-07-24 11:58:00.813 | INFO     | rca_kpis.science:science_instrument:149 - RS03ASHS-MJ03B-10-CTDPFB304: 17 wks, sci~100% [54s, peak 14.4 GiB]
+2026-07-24 11:58:00.828 | INFO     | rca_kpis.science:science_instrument:136 - RS03CCAL-MJ03F-12-CTDPFB305: start
+2026-07-24 11:58:47.186 | INFO     | rca_kpis.science:science_instrument:149 - RS03CCAL-MJ03F-12-CTDPFB305: 17 wks, sci~100% [46s, peak 14.4 GiB]
+2026-07-24 11:58:47.193 | INFO     | rca_kpis.science:science_instrument:136 - RS03ECAL-MJ03E-12-CTDPFB306: start
+2026-07-24 11:59:37.927 | INFO     | rca_kpis.science:science_instrument:149 - RS03ECAL-MJ03E-12-CTDPFB306: 17 wks, sci~100% [51s, peak 14.4 GiB]
+2026-07-24 11:59:37.935 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT2-MJ03D-11-CTDPFB307: start
+2026-07-24 12:00:05.808 | INFO     | rca_kpis.science:science_instrument:149 - RS03INT2-MJ03D-11-CTDPFB307: 17 wks, sci~100% [28s, peak 14.4 GiB]
+2026-07-24 12:00:05.810 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-PC01A-4A-CTDPFA103: start
+2026-07-24 12:01:14.493 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-PC01A-4A-CTDPFA103: 17 wks, sci~100% [69s, peak 14.4 GiB]
+2026-07-24 12:01:14.525 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-PC01B-4A-CTDPFA109: start
+2026-07-24 12:02:11.286 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-PC01B-4A-CTDPFA109: 17 wks, sci~100% [57s, peak 14.4 GiB]
+2026-07-24 12:02:11.304 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-PC03A-4A-CTDPFA303: start
+2026-07-24 12:03:19.166 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-PC03A-4A-CTDPFA303: 17 wks, sci~100% [68s, peak 14.4 GiB]
+2026-07-24 12:03:19.203 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-2A-CTDPFA102: start
+2026-07-24 12:04:13.689 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-2A-CTDPFA102: 17 wks, sci~100% [54s, peak 14.4 GiB]
+2026-07-24 12:04:13.702 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-2A-CTDPFA107: start
+2026-07-24 12:05:20.714 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-2A-CTDPFA107: 17 wks, sci~100% [67s, peak 14.4 GiB]
+2026-07-24 12:05:20.744 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-2A-CTDPFA302: start
+2026-07-24 12:06:17.135 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-2A-CTDPFA302: 17 wks, sci~100% [56s, peak 14.4 GiB]
+2026-07-24 12:06:17.152 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-PC01A-4C-FLORDD103: start
+2026-07-24 12:07:05.271 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-PC01A-4C-FLORDD103: 17 wks, sci~100% [48s, peak 14.4 GiB]
+2026-07-24 12:07:05.283 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-PC03A-4C-FLORDD303: start
+2026-07-24 12:08:01.669 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-PC03A-4C-FLORDD303: 17 wks, sci~100% [56s, peak 14.4 GiB]
+2026-07-24 12:08:01.682 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-3A-FLORTD104: start
+2026-07-24 12:09:34.971 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-3A-FLORTD104: 17 wks, sci~71% [93s, peak 14.4 GiB]
+2026-07-24 12:09:34.981 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-3A-FLORTD101: start
+2026-07-24 12:10:16.247 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-3A-FLORTD101: 17 wks, sci~100% [41s, peak 14.4 GiB]
+2026-07-24 12:10:16.257 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-3A-FLORTD301: start
+2026-07-24 12:11:05.553 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-3A-FLORTD301: 17 wks, sci~86% [49s, peak 14.4 GiB]
+2026-07-24 12:11:05.567 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-4A-NUTNRA102: start
+2026-07-24 12:11:14.752 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-4A-NUTNRA102: 17 wks, sci~100% [9s, peak 14.4 GiB]
+2026-07-24 12:11:14.753 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-4A-NUTNRA101: start
+2026-07-24 12:11:23.654 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-4A-NUTNRA101: 16 wks, sci~96% [9s, peak 14.4 GiB]
+2026-07-24 12:11:23.654 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-4A-NUTNRA301: start
+2026-07-24 12:11:34.166 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-4A-NUTNRA301: 17 wks, sci~96% [11s, peak 14.4 GiB]
+2026-07-24 12:11:34.167 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-3C-PARADA102: start
+2026-07-24 12:12:44.975 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-3C-PARADA102: 17 wks, sci~25% [71s, peak 14.4 GiB]
+2026-07-24 12:12:45.016 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-3C-PARADA101: start
+2026-07-24 12:15:05.076 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-3C-PARADA101: 17 wks, sci~35% [140s, peak 14.5 GiB]
+2026-07-24 12:15:05.119 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-3C-PARADA301: start
+2026-07-24 12:17:09.035 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-3C-PARADA301: 17 wks, sci~35% [124s, peak 17.8 GiB]
+2026-07-24 12:17:09.082 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-4F-PCO2WA102: start
+2026-07-24 12:17:13.204 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-4F-PCO2WA102: 17 wks, sci~64% [4s, peak 17.8 GiB]
+2026-07-24 12:17:13.204 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-PC01B-4D-PCO2WA105: start
+2026-07-24 12:17:18.017 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-PC01B-4D-PCO2WA105: 17 wks, sci~100% [5s, peak 17.8 GiB]
+2026-07-24 12:17:18.017 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-4F-PCO2WA101: start
+2026-07-24 12:17:21.789 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-4F-PCO2WA101: 16 wks, sci~49% [4s, peak 17.8 GiB]
+2026-07-24 12:17:21.790 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-4F-PCO2WA301: start
+2026-07-24 12:17:25.767 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-4F-PCO2WA301: 17 wks, sci~76% [4s, peak 17.8 GiB]
+2026-07-24 12:17:25.768 | INFO     | rca_kpis.science:science_instrument:136 - CE02SHBP-LJ01D-09-PCO2WB103: start
+2026-07-24 12:17:29.485 | INFO     | rca_kpis.science:science_instrument:149 - CE02SHBP-LJ01D-09-PCO2WB103: 17 wks, sci~100% [4s, peak 17.8 GiB]
+2026-07-24 12:17:29.485 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSBP-LJ01C-09-PCO2WB104: start
+2026-07-24 12:17:33.766 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSBP-LJ01C-09-PCO2WB104: 17 wks, sci~100% [4s, peak 17.8 GiB]
+2026-07-24 12:17:33.766 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-2B-PHSENA108: start
+2026-07-24 12:17:38.323 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-2B-PHSENA108: 17 wks, sci~25% [5s, peak 17.8 GiB]
+2026-07-24 12:17:38.323 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-PC01B-4B-PHSENA106: start
+2026-07-24 12:17:42.592 | INFO     | rca_kpis.science:science_instrument:151 - CE04OSPS-PC01B-4B-PHSENA106: 0 wks (no data in window) [4s, peak 17.8 GiB]
+2026-07-24 12:17:42.592 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-PC01A-4B-PHSENA102: start
+2026-07-24 12:17:47.215 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-PC01A-4B-PHSENA102: 17 wks, sci~100% [5s, peak 17.8 GiB]
+2026-07-24 12:17:47.215 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-2D-PHSENA101: start
+2026-07-24 12:17:51.603 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-2D-PHSENA101: 16 wks, sci~99% [4s, peak 17.8 GiB]
+2026-07-24 12:17:51.604 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-PC03A-4B-PHSENA302: start
+2026-07-24 12:17:56.312 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-PC03A-4B-PHSENA302: 17 wks, sci~100% [5s, peak 17.8 GiB]
+2026-07-24 12:17:56.312 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-2D-PHSENA301: start
+2026-07-24 12:18:01.036 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-2D-PHSENA301: 17 wks, sci~100% [5s, peak 17.8 GiB]
+2026-07-24 12:18:01.036 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-PC01B-4C-PHSENH109: start
+2026-07-24 12:18:04.207 | WARNING  | rca_kpis.science:science_instrument:146 - CE04OSPS-PC01B-4C-PHSENH109: no QARTOD vars [3s, peak 17.8 GiB]
+2026-07-24 12:18:04.207 | INFO     | rca_kpis.science:science_instrument:136 - CE02SHBP-LJ01D-10-PHSENH110: start
+2026-07-24 12:18:07.153 | WARNING  | rca_kpis.science:science_instrument:146 - CE02SHBP-LJ01D-10-PHSENH110: no QARTOD vars [3s, peak 17.8 GiB]
+2026-07-24 12:18:07.153 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSBP-LJ01C-10-PHSEND107: start
+2026-07-24 12:18:11.413 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSBP-LJ01C-10-PHSEND107: 17 wks, sci~92% [4s, peak 17.8 GiB]
+2026-07-24 12:18:11.413 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-4B-VELPTD106: start
+2026-07-24 12:18:44.111 | WARNING  | rca_kpis.science:science_instrument:146 - CE04OSPS-SF01B-4B-VELPTD106: no QARTOD vars [33s, peak 17.8 GiB]
+2026-07-24 12:18:44.122 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-4B-VELPTD102: start
+2026-07-24 12:19:32.583 | WARNING  | rca_kpis.science:science_instrument:146 - RS01SBPS-SF01A-4B-VELPTD102: no QARTOD vars [48s, peak 17.8 GiB]
+2026-07-24 12:19:32.599 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-4B-VELPTD302: start
+2026-07-24 12:20:24.676 | WARNING  | rca_kpis.science:science_instrument:146 - RS03AXPS-SF03A-4B-VELPTD302: no QARTOD vars [52s, peak 17.8 GiB]
+2026-07-24 12:20:24.692 | INFO     | rca_kpis.science:science_instrument:136 - RS01SLBS-LJ01A-10-ADCPTE101: start
+2026-07-24 12:21:14.367 | INFO     | rca_kpis.science:science_instrument:151 - RS01SLBS-LJ01A-10-ADCPTE101: 0 wks (no data in window) [50s, peak 17.8 GiB]
+2026-07-24 12:21:14.376 | INFO     | rca_kpis.science:science_instrument:136 - RS01SUM2-MJ01B-12-ADCPSK101: start
+2026-07-24 12:22:05.243 | INFO     | rca_kpis.science:science_instrument:149 - RS01SUM2-MJ01B-12-ADCPSK101: 17 wks, sci~100% [51s, peak 17.8 GiB]
+2026-07-24 12:22:05.250 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSBP-LJ01C-05-ADCPSI103: start
+2026-07-24 12:22:28.740 | WARNING  | rca_kpis.science:science_instrument:154 - CE04OSBP-LJ01C-05-ADCPSI103: C2 failed (ValueError: conflicting sizes for dimension 'time': length 401798228 on 'bin_depths' and length 401820969 on {'time': 'bin_1_distance'})
+2026-07-24 12:22:28.740 | INFO     | rca_kpis.science:science_instrument:136 - CE02SHBP-LJ01D-05-ADCPTB104: start
+2026-07-24 12:23:59.163 | INFO     | rca_kpis.science:science_instrument:149 - CE02SHBP-LJ01D-05-ADCPTB104: 17 wks, sci~100% [90s, peak 17.8 GiB]
+2026-07-24 12:23:59.212 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXBS-LJ03A-10-ADCPTE303: start
+2026-07-24 12:48:34.556 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXBS-LJ03A-10-ADCPTE303: 17 wks, sci~100% [89s, peak 17.8 GiB]
+2026-07-24 12:48:34.584 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-PC03A-05-ADCPTD302: start
+2026-07-24 12:50:38.058 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-PC03A-05-ADCPTD302: 17 wks, sci~100% [123s, peak 17.8 GiB]
+2026-07-24 12:50:38.078 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-PC01A-05-ADCPTD102: start
+2026-07-24 12:52:35.729 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-PC01A-05-ADCPTD102: 17 wks, sci~100% [118s, peak 17.8 GiB]
+2026-07-24 12:52:35.766 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-PC03A-06-VADCPB301: start
+2026-07-24 12:53:21.609 | WARNING  | rca_kpis.science:science_instrument:146 - RS03AXPS-PC03A-06-VADCPB301: no QARTOD vars [46s, peak 17.8 GiB]
+2026-07-24 12:53:21.610 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-PC01A-06-VADCPB101: start
+2026-07-24 12:54:00.014 | WARNING  | rca_kpis.science:science_instrument:146 - RS01SBPS-PC01A-06-VADCPB101: no QARTOD vars [38s, peak 17.8 GiB]
+2026-07-24 12:54:00.014 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT1-MJ03C-07-D1000A301: start
+2026-07-24 12:54:46.408 | INFO     | rca_kpis.science:science_instrument:149 - RS03INT1-MJ03C-07-D1000A301: 17 wks, sci~100% [46s, peak 17.8 GiB]
+2026-07-24 12:54:46.409 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT1-MJ03C-10-TRHPHA301: start
+2026-07-24 12:55:39.600 | INFO     | rca_kpis.science:science_instrument:149 - RS03INT1-MJ03C-10-TRHPHA301: 17 wks, sci~99% [53s, peak 17.8 GiB]
+2026-07-24 12:55:39.601 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT1-MJ03C-09-TRHPHA302: start
+2026-07-24 12:55:58.475 | WARNING  | rca_kpis.science:science_instrument:146 - RS03INT1-MJ03C-09-TRHPHA302: no QARTOD vars [19s, peak 17.8 GiB]
+2026-07-24 12:55:58.476 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXBS-MJ03A-06-PRESTA301: start
+2026-07-24 12:56:33.993 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXBS-MJ03A-06-PRESTA301: 17 wks, sci~100% [36s, peak 17.8 GiB]
+2026-07-24 12:56:33.994 | INFO     | rca_kpis.science:science_instrument:136 - RS01SLBS-MJ01A-06-PRESTA101: start
+2026-07-24 12:57:51.895 | INFO     | rca_kpis.science:science_instrument:149 - RS01SLBS-MJ01A-06-PRESTA101: 17 wks, sci~100% [78s, peak 17.8 GiB]
+2026-07-24 12:57:51.922 | INFO     | rca_kpis.science:science_instrument:136 - RS01SUM1-LJ01B-09-PRESTB102: start
+2026-07-24 12:58:36.739 | INFO     | rca_kpis.science:science_instrument:149 - RS01SUM1-LJ01B-09-PRESTB102: 17 wks, sci~100% [45s, peak 17.8 GiB]
+2026-07-24 12:58:36.763 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXBS-LJ03A-05-HPIESA301: start
+2026-07-24 12:58:42.554 | INFO     | rca_kpis.science:science_instrument:151 - RS03AXBS-LJ03A-05-HPIESA301: 0 wks (no data in window) [6s, peak 17.8 GiB]
+2026-07-24 12:58:42.555 | INFO     | rca_kpis.science:science_instrument:136 - RS01SLBS-LJ01A-05-HPIESA101: start
+2026-07-24 12:58:47.878 | INFO     | rca_kpis.science:science_instrument:151 - RS01SLBS-LJ01A-05-HPIESA101: 0 wks (no data in window) [5s, peak 17.8 GiB]
+2026-07-24 12:58:47.879 | INFO     | rca_kpis.science:science_instrument:136 - RS03ASHS-MJ03B-07-TMPSFA301: start
+2026-07-24 12:59:15.036 | INFO     | rca_kpis.science:science_instrument:149 - RS03ASHS-MJ03B-07-TMPSFA301: 17 wks, sci~100% [27s, peak 17.8 GiB]
+2026-07-24 12:59:15.038 | INFO     | rca_kpis.science:science_instrument:136 - RS01SLBS-MJ01A-12-VEL3DB101: start
+2026-07-24 13:00:30.565 | INFO     | rca_kpis.science:science_instrument:149 - RS01SLBS-MJ01A-12-VEL3DB101: 17 wks, sci~100% [76s, peak 17.8 GiB]
+2026-07-24 13:00:30.595 | INFO     | rca_kpis.science:science_instrument:136 - RS01SUM1-LJ01B-12-VEL3DB104: start
+2026-07-24 13:01:21.656 | INFO     | rca_kpis.science:science_instrument:149 - RS01SUM1-LJ01B-12-VEL3DB104: 17 wks, sci~100% [51s, peak 17.8 GiB]
+2026-07-24 13:01:21.685 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXBS-MJ03A-12-VEL3DB301: start
+2026-07-24 13:02:18.098 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXBS-MJ03A-12-VEL3DB301: 17 wks, sci~100% [56s, peak 17.8 GiB]
+2026-07-24 13:02:18.135 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT2-MJ03D-12-VEL3DB304: start
+2026-07-24 13:03:12.452 | INFO     | rca_kpis.science:science_instrument:149 - RS03INT2-MJ03D-12-VEL3DB304: 17 wks, sci~100% [54s, peak 17.8 GiB]
+2026-07-24 13:03:12.477 | INFO     | rca_kpis.science:science_instrument:136 - RS03ASHS-MJ03B-09-BOTPTA304: start
+2026-07-24 13:03:14.589 | WARNING  | rca_kpis.science:science_instrument:146 - RS03ASHS-MJ03B-09-BOTPTA304: no QARTOD vars [2s, peak 17.8 GiB]
+2026-07-24 13:03:14.590 | INFO     | rca_kpis.science:science_instrument:136 - RS03CCAL-MJ03F-05-BOTPTA301: start
+2026-07-24 13:03:17.824 | WARNING  | rca_kpis.science:science_instrument:146 - RS03CCAL-MJ03F-05-BOTPTA301: no QARTOD vars [3s, peak 17.8 GiB]
+2026-07-24 13:03:17.825 | INFO     | rca_kpis.science:science_instrument:136 - RS03ECAL-MJ03E-06-BOTPTA302: start
+2026-07-24 13:03:20.339 | WARNING  | rca_kpis.science:science_instrument:146 - RS03ECAL-MJ03E-06-BOTPTA302: no QARTOD vars [3s, peak 17.8 GiB]
+2026-07-24 13:03:20.340 | INFO     | rca_kpis.science:science_instrument:136 - RS03INT2-MJ03D-06-BOTPTA303: start
+2026-07-24 13:03:23.978 | WARNING  | rca_kpis.science:science_instrument:146 - RS03INT2-MJ03D-06-BOTPTA303: no QARTOD vars [4s, peak 17.8 GiB]
+2026-07-24 13:03:23.979 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSBP-LJ01C-07-VEL3DC107: start
+2026-07-24 13:06:04.805 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSBP-LJ01C-07-VEL3DC107: 17 wks, sci~88% [161s, peak 17.8 GiB]
+2026-07-24 13:06:04.919 | INFO     | rca_kpis.science:science_instrument:136 - CE02SHBP-LJ01D-07-VEL3DC108: start
+2026-07-24 13:11:02.400 | INFO     | rca_kpis.science:science_instrument:149 - CE02SHBP-LJ01D-07-VEL3DC108: 17 wks, sci~88% [297s, peak 21.1 GiB]
+2026-07-24 13:11:02.787 | INFO     | rca_kpis.science:science_instrument:136 - CE04OSPS-SF01B-3D-SPKIRA102: start
+2026-07-24 13:13:20.626 | INFO     | rca_kpis.science:science_instrument:149 - CE04OSPS-SF01B-3D-SPKIRA102: 17 wks, sci~23% [138s, peak 21.1 GiB]
+2026-07-24 13:13:20.682 | INFO     | rca_kpis.science:science_instrument:136 - RS01SBPS-SF01A-3D-SPKIRA101: start
+2026-07-24 13:14:22.056 | INFO     | rca_kpis.science:science_instrument:149 - RS01SBPS-SF01A-3D-SPKIRA101: 17 wks, sci~49% [61s, peak 21.1 GiB]
+2026-07-24 13:14:22.073 | INFO     | rca_kpis.science:science_instrument:136 - RS03AXPS-SF03A-3D-SPKIRA301: start
+2026-07-24 13:17:22.558 | INFO     | rca_kpis.science:science_instrument:149 - RS03AXPS-SF03A-3D-SPKIRA301: 17 wks, sci~39% [180s, peak 21.1 GiB]
+2026-07-24 13:17:22.642 | INFO     | rca_kpis.science:main:184 - scanned 74 zarr in 3709s (56 with QARTOD)
+2026-07-24 13:17:22.647 | SUCCESS  | rca_kpis.science:main:196 - wrote reports/2026-07-20/weekly_science.csv (56 instruments with QARTOD)
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x142dd9010>
+Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x142dede50>, 220968.14508625), (<aiohttp.client_proto.ResponseHandler object at 0x142dec7d0>, 220968.328927208), (<aiohttp.client_proto.ResponseHandler object at 0x142decb90>, 220968.54179225), (<aiohttp.client_proto.ResponseHandler object at 0x142dee990>, 220969.292592125)])']
+connector: <aiohttp.connector.TCPConnector object at 0x142dd8590>

@@ -19,9 +19,12 @@ deployments:
     work_queue_name:
     job_variables:
       cpu: 8192
-      memory: 61440
+      memory: 61440   # serial + flox peaks ~22 GB; 60 GB is ample once flox is active
       image: public.ecr.aws/p0l4c7i2/rca-kpis:latest
   schedule:
-    cron: "0 12 * * 1"   # Mondays 12:00 UTC
+    # first Monday of the month, 12:00 UTC. day_or:false ANDs day-of-month with
+    # day-of-week -- WITHOUT it, "1-7 * 1" ORs them and fires every Monday too.
+    cron: "0 12 1-7 * 1"
+    day_or: false
     timezone: UTC
   is_schedule_active: true

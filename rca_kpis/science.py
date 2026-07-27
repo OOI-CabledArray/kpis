@@ -37,8 +37,15 @@ FAIL = 4              # QARTOD fail flag (numeric, in _qartod_results)
 FAIL_CHAR = "4"       # same, as a character in the _qartod_executed string
 CLIMATOLOGY = "climatology_test"
 
-# TEMPORARY: substrings of refDes to skip -- stores mid-regeneration RCA s3 bucket
-REGENERATING = ["OPTAA", "VEL3DC107"]
+# substrings of refDes to exclude from C2 (matched against refDes).
+# OPTAA: our secondary processing pads the ragged wavelength axis (e.g. 86->92)
+#   with NaN, which promotes qartod_results uint8->float32 (4x memory, OOMs) and
+#   qartod_executed <U1->object. It also biases the score: pad cells are NaN, so
+#   `!= FAIL` counts them as pass. Real fix is upstream -- pad within dtype (uint8
+#   fill 9 / not_evaluated 2), don't promote. Excluded until then.
+# (VEL3DC107 is left in: its dim-mismatch open raises ValueError, caught per-
+#  instrument -> greyed, so it self-excludes without a skip entry.)
+REGENERATING = ["OPTAA"]
 
 def zarr_files():
     """{refDes: zarrFile} for instruments that have a zarr in sitesDictionary."""
@@ -142,7 +149,7 @@ def science_instrument(item, start, end, decompose=False):
             logger.info(f"{ref_des}: {len(weekly)} wks, sci~{mean_sci:.0f}% [{dt:.0f}s, peak {peak:.1f} GiB]")
         else:
             logger.info(f"{ref_des}: 0 wks (no data in window) [{dt:.0f}s, peak {peak:.1f} GiB]")
-        return ref_des, weekly
+        return ref_des, weekly or {}  # never None -- the writer iterates .items()
     except Exception as e:  # missing/odd zarr -> no C2 (gray), don't kill the run
         logger.warning(f"{ref_des}: C2 failed ({type(e).__name__}: {e})")
         return ref_des, {}
