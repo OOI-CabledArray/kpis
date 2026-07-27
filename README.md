@@ -188,13 +188,15 @@ is different — it sets C1 expected to 0 while C3 continues to show the loss.)
 
 ## Automation
 
-- **Prefect deployment** (`prefect.yaml`, flow in `rca_kpis/flow.py`) — Mondays 12:00 UTC on
-  ECS Fargate (16 vCPU / 96 GB; the C2 zarr scan is memory-heavy). Runs all three metrics:
-  `crawl_archive` → `crawl_science` → `compute_kpi` → `plot_kpi` ×3, then commits
-  `reports/<date>/` to `main` (needs a `GIT_TOKEN` env var in the work pool). Re-tabulating
-  each week heals previously incomplete weeks as late/backfilled data arrives. Crawler
-  warnings (missing QARTOD, broken zarr, missing archive folder) are forwarded to the
-  Prefect UI logs.
+- **Prefect deployment** (`prefect.yaml`, flow in `rca_kpis/flow.py`) — **first Monday of the
+  month**, 12:00 UTC, on ECS Fargate (16 vCPU / 120 GB; the C2 zarr scan is memory-heavy).
+  Runs all three metrics sequentially: `crawl_archive` → `crawl_science` → `compute_kpi` →
+  `plot_kpi` ×3, then commits `reports/<date>/` to `main` (needs a `GH_PAT` env var in the
+  work pool). Monthly suits quarterly reporting, and re-tabulating still heals earlier weeks
+  as late/backfilled data arrives; trigger a one-off run for anything sooner.
+  Crawler output (OPTAA skips, missing QARTOD, broken zarr, empty windows, peak RSS) goes to
+  the Prefect UI **and** to `reports/<date>/pipeline.log`, committed beside the numbers —
+  data status is often why a cell is blank or low.
 - **`refresh-baseline.yml`** (GitHub Actions) — manual only. Regenerates
   `config/original_expected.csv`. Curated overrides are untouched. Slow and shifts the
   C1/C3 denominator — review the diff.

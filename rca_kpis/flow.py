@@ -42,6 +42,22 @@ def loguru_to_prefect():
         loguru_logger.remove(sink)
 
 
+@contextmanager
+def log_to_report(rundate):
+    """Tee the crawlers' loguru output to reports/<date>/pipeline.log so the
+    data-status trail (OPTAA skips, missing QARTOD, empty windows, QC failures,
+    peak RSS) is committed next to the numbers it explains -- data status is
+    often the reason a KPI cell is blank or low."""
+    path = f"reports/{rundate}/pipeline.log"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    sink = loguru_logger.add(path, level="INFO",
+                             format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {message}")
+    try:
+        yield
+    finally:
+        loguru_logger.remove(sink)  # close/flush before git add
+
+
 @task(name="crawl-archive")
 def crawl_archive_task(rundate, start):
     logger = get_run_logger()
@@ -90,7 +106,7 @@ def git_commit_push_task(rundate):
     if not status:
         logger.info("nothing to commit")
         return
-    run(f'git commit -m "Weekly KPI {rundate} (Prefect)"')
+    run(f'git commit -m "Monthly KPI {rundate} (Prefect)"')
     run("git push origin main")
     logger.info(f"pushed reports/{rundate}/")
 
@@ -108,14 +124,16 @@ def kpi_pipeline():
     rundate = str(today)
     start = str(months_back(today, 3))
 
-    # C2 crawls instruments serially (no threading): the heavy reductions each
-    # need most of the 60 GB task, so concurrency OOMs. Reliable over fast --
-    # fine for a weekly batch job. Whole pipeline is sequential.
-    crawl_archive_task(rundate=rundate, start=start)
-    crawl_science_task(rundate=rundate, start=start)
-    compute_kpi_task(rundate=rundate)
-    for m in ("technical", "retention", "science"):
-        plot_kpi_task(metric=m, rundate=rundate)
+    # C2 crawls instruments serially (no threading): even with flox the heavy 2D
+    # stores peak ~28 GB and the heap doesn't shrink in between, so concurrency
+    # OOMs. Reliable over fast -- fine for a monthly batch job.
+    with log_to_report(rundate):
+        crawl_archive_task(rundate=rundate, start=start)
+        crawl_science_task(rundate=rundate, start=start)
+        compute_kpi_task(rundate=rundate)
+        for m in ("technical", "retention", "science"):
+            plot_kpi_task(metric=m, rundate=rundate)
+    # push outside the sink so pipeline.log is closed and included in the commit
     git_commit_push_task(rundate=rundate)
 
 
