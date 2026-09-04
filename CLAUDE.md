@@ -39,4 +39,11 @@ failed/reduced instruments go in `config/instrument_status.csv`; to grey out or 
 per metric (bad QARTOD test, Navy diversion, EarthScope routing, ...) use
 `config/instrument_overrides.csv` (`refDes,pct_technical,pct_retention,pct_science,note`;
 empty=compute, number=fixed score, `exclude`=grey) — NOT a zeroed baseline. All are
-hand-maintained and persist across refreshes. (Per-run outputs → `reports/<date>/`; notes in `docs/`.)
+hand-maintained and persist across refreshes.
+
+Those three are time-windowed and allow **several rows per refDes**: a row covers the weeks whose
+Monday falls in `[start_date, end_date)`, either bound optional. Close a row (`end_date`) to end a
+condition -- the week then falls back to the computed default; or leave the end open and add a row
+with a later `start_date` to supersede it (latest start wins). That is how a maintenance cruise
+splits the record without shifting already-reported weeks. Note a closed window in the two override
+files reverts to the auto p95 -- often the number the override existed to correct. (Per-run outputs → `reports/<date>/`; notes in `docs/`.)

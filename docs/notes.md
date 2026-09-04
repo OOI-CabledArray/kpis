@@ -31,7 +31,8 @@ Per-metric overrides live in `config/instrument_overrides.csv` (`refDes,pct_tech
 % of present zarr data without a fail flag (4), gross-range only (climatology excluded), per
 week. 59 instruments have QARTOD; overall ~92%.
 
-- **PAR (PARADA101/102/301):** greyed from C2 (config/instrument_overrides.csv) — gross-range fails 100%
-  of points at every site (climatology innocent), i.e. good data / bad test. **open / QC team:**
-  fix the mis-set PAR gross-range bound in prod, then remove the exclusion.
+- **PAR (PARADA101/102/301):** greyed from C2 (config/instrument_overrides.csv) — gross-range fails
+  most points at every site (climatology innocent), i.e. good data / bad test. The bound was fixed
+  in prod (2026-07), but the zarr still carry the pre-fix flags (~10–38%). **open:** drop the
+  exclusion once the stores are reprocessed and a re-crawl reads high.
 - Lower readers to glance at: PCO2WA101 (~52%), PHSENA108 (~73%), FLORTD104/301 (~73–77%).

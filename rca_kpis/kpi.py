@@ -11,6 +11,12 @@ that survive a baseline refresh) -- and differ only in the denominator:
 Healthy instruments get C1 == C3; they diverge only for failed/reduced ones.
 Expected == 0 (failed, or not in this archive) yields a blank KPI, not 0%.
 
+All three hand-maintained configs (instrument_status, baseline_overrides,
+instrument_overrides) are time-windowed: each row carries `start_date` and
+`end_date` and there may be several rows per refDes, the one whose window covers
+that week applying (see `at_week`). That is how a maintenance cruise splits the
+record -- close the pre-cruise row on the cruise date, or open a new row there.
+
 Outputs:
 - kpi_<date>.csv          one row per instrument-week (condensed, both metrics)
 - kpi_pivot_<metric>_<date>.csv   instruments x weeks grid of whole-percent
@@ -29,6 +35,38 @@ from loguru import logger
 MEAN_LABEL = "ALL_INSTRUMENTS_MEAN"
 
 
+def _windows(rows, value):
+    """{refDes: [(start, end, value(row)), ...]} sorted by start, for `at_week`.
+
+    Blank start means "from the beginning of time" and blank end "still open", so a
+    single undated row covers the whole record.
+    """
+    def day(v, fallback):
+        return date.fromisoformat(v.strip()) if v.strip() else fallback
+
+    windows = {}
+    for r in rows:
+        start = r.get("start_date") or r.get("effective_date", "")  # effective_date: old name
+        windows.setdefault(r["refDes"].strip(), []).append(
+            (day(start, date.min), day(r.get("end_date", ""), date.max), value(r)))
+    for v in windows.values():
+        v.sort(key=lambda t: t[0])
+    return windows
+
+
+def at_week(windows, ref_des, wk, default=None):
+    """The config row in effect for `ref_des` during week `wk`, else `default`.
+
+    A row covers the weeks whose Monday falls in [start_date, end_date); of the rows
+    covering a week the one starting latest wins, so an open-ended row is superseded
+    by a later row without needing its end_date set. Closing a row with no successor
+    (or leaving a gap between rows) falls back to `default` -- the computed value.
+    """
+    mon = week_start(wk)
+    hits = [v for start, end, v in windows.get(ref_des, []) if start <= mon < end]
+    return hits[-1] if hits else default
+
+
 def load_original(path):
     """Per-instrument full-capacity p95 WEEKLY delivery (bytes) from crawl_baseline."""
     if not os.path.exists(path):
@@ -39,29 +77,32 @@ def load_original(path):
 
 
 def load_status(path):
-    """Failed/reduced instruments: {refDes: (status, effective_date, reduced_weekly_bytes)}."""
+    """Failed/reduced instruments, time-windowed: {refDes: [(start, end, (status, reduced_bytes))]}.
+
+    Set `end_date` to retire a failure -- that is how an instrument swapped on a
+    maintenance cruise returns to full expected capacity.
+    """
     if not os.path.exists(path):
         logger.warning(f"{path} missing -- no failed/reduced instruments applied (C1 == C3)")
         return {}
-    status = {}
+    def value(r):
+        reduced = parse_size(r["reduced_weekly"], binary=True) if r.get("reduced_weekly", "").strip() else 0
+        return (r["status"].strip().lower(), reduced)
     with open(path) as f:
-        for r in csv.DictReader(f):
-            eff = date.fromisoformat(r["effective_date"].strip())
-            reduced = parse_size(r["reduced_weekly"], binary=True) if r.get("reduced_weekly", "").strip() else 0
-            status[r["refDes"].strip()] = (r["status"].strip().lower(), eff, reduced)
-    return status
+        return _windows(csv.DictReader(f), value)
 
 
 def load_overrides(path):
-    """Curated baseline corrections {refDes: bytes} applied on top of original_expected.csv.
+    """Curated baseline corrections applied on top of original_expected.csv, time-windowed:
+    {refDes: [(start, end, bytes)]}.
 
     Hand-maintained; crawl_baseline never touches it, so corrections survive a refresh.
     """
     if not os.path.exists(path):
         return {}
     with open(path) as f:
-        return {r["refDes"].strip(): parse_size(r["original_p95_weekly"], binary=True)
-                for r in csv.DictReader(f) if r.get("original_p95_weekly", "").strip()}
+        return _windows((r for r in csv.DictReader(f) if r.get("original_p95_weekly", "").strip()),
+                         lambda r: parse_size(r["original_p95_weekly"], binary=True))
 
 
 def load_science(path):
@@ -76,7 +117,8 @@ def load_science(path):
 
 
 def load_instrument_overrides(path):
-    """Unified per-metric overrides: {refDes: (pct_technical, pct_retention, pct_science)}.
+    """Unified per-metric overrides, time-windowed:
+    {refDes: [(start, end, (pct_technical, pct_retention, pct_science))]}.
     Each value: None = compute normally, 'exclude' = grey out, float = fixed score.
     C1/C3 fixed scores are skipped for failed weeks; C2 zarr values always win over fixed scores."""
     if not os.path.exists(path):
@@ -89,8 +131,9 @@ def load_instrument_overrides(path):
             return "exclude"
         return float(v)
     with open(path) as f:
-        return {r["refDes"].strip(): (parse(r["pct_technical"]), parse(r["pct_retention"]), parse(r["pct_science"]))
-                for r in csv.DictReader(f)}
+        return _windows(csv.DictReader(f), lambda r: (parse(r["pct_technical"]),
+                                                       parse(r["pct_retention"]),
+                                                       parse(r["pct_science"])))
 
 
 def week_start(week):  # week label is already the Monday date (YYYY-MM-DD)
@@ -135,7 +178,7 @@ def main(rundate, original="config/original_expected.csv", status_path="config/i
          instrument_overrides="config/instrument_overrides.csv"):
     rd_dir = f"reports/{rundate}"
     orig = load_original(original)
-    orig.update(load_overrides(overrides))  # curated corrections win over the auto baseline
+    base_ov = load_overrides(overrides)  # curated corrections win over the auto baseline
     status = load_status(status_path)
     inst_ov = load_instrument_overrides(instrument_overrides)
     science = load_science(f"{rd_dir}/weekly_science.csv")  # C2 (optional)
@@ -145,13 +188,15 @@ def main(rundate, original="config/original_expected.csv", status_path="config/i
     records = []
     for r in rows:
         rd, wk, d = r["refDes"], r["week"], int(r["delivered_bytes"])
-        c3 = c1 = orig.get(rd, 0)  # full intended weekly capacity (p95 of weekly delivery)
-        if rd in status:
-            state, eff, reduced = status[rd]
-            if week_start(wk) >= eff:
-                c1 = 0 if state == "failed" else reduced
-        ov_tech, ov_ret, ov_sci = inst_ov.get(rd, (None, None, None))
-        is_failed = rd in status and status[rd][0] == "failed" and week_start(wk) >= status[rd][1]
+        # full intended weekly capacity (p95 of weekly delivery) as of this week
+        c3 = c1 = at_week(base_ov, rd, wk, orig.get(rd, 0))
+        state, reduced = at_week(status, rd, wk, ("healthy", 0))
+        if state == "failed":
+            c1 = 0
+        elif state == "reduced":
+            c1 = reduced
+        is_failed = state == "failed"
+        ov_tech, ov_ret, ov_sci = at_week(inst_ov, rd, wk, (None, None, None))
 
         if ov_tech == "exclude":
             pct_technical = None
