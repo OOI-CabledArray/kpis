@@ -1,7 +1,7 @@
 refDes,start_date,end_date,pct_technical,pct_retention,pct_science,note
-RS01SBPS-SF01A-3C-PARADA101,,,,,exclude,gross-range test fixed in prod; zarr not yet reprocessed
-CE04OSPS-SF01B-3C-PARADA102,,,,,exclude,gross-range test fixed in prod; zarr not yet reprocessed
-RS03AXPS-SF03A-3C-PARADA301,,,,,exclude,gross-range test fixed in prod; zarr not yet reprocessed
+RS01SBPS-SF01A-3C-PARADA101,,,,,exclude,gross-range fix pushed 2026-09-30; awaiting zarr reprocessing -- close this row once C2 reads true
+CE04OSPS-SF01B-3C-PARADA102,,,,,exclude,gross-range fix pushed 2026-09-30; awaiting zarr reprocessing -- close this row once C2 reads true
+RS03AXPS-SF03A-3C-PARADA301,,,,,exclude,gross-range fix pushed 2026-09-30; awaiting zarr reprocessing -- close this row once C2 reads true
 CE02SHBP-LJ01D-11-HYDBBA106,,,100,100,exclude,Navy diversion makes the delivery score invalid
 CE04OSBP-LJ01C-11-HYDBBA105,,,100,100,exclude,Navy diversion makes the delivery score invalid
 RS01SBPS-PC01A-08-HYDBBA103,,,100,100,exclude,Navy diversion makes the delivery score invalid
